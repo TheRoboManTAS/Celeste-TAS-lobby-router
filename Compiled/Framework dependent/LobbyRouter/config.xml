@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <useTableInput>false</useTableInput>
+  <nameSeparators>-</nameSeparators>
+  <timestampAt1X>true</timestampAt1X>
+  <useTxtOutput>false</useTxtOutput>
+  <distinctTimes>true</distinctTimes>
+  <restartPenalty>190</restartPenalty>
+  <requiredRestarts>true</requiredRestarts>
+  <maxRestarts>-1</maxRestarts>
+</settings>

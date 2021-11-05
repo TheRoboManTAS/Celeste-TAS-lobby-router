@@ -1,0 +1,16 @@
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\lobbyRouter.exe
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\lobbyRouter.deps.json
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\lobbyRouter.runtimeconfig.json
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\lobbyRouter.runtimeconfig.dev.json
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\lobbyRouter.dll
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\ref\lobbyRouter.dll
+C:\Users\joose\source\repos\lobbyRouter\bin\Release\net5.0\lobbyRouter.pdb
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.csproj.AssemblyReference.cache
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.AssemblyInfoInputs.cache
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.AssemblyInfo.cs
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.csproj.CoreCompileInputs.cache
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.dll
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\ref\lobbyRouter.dll
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.pdb
+C:\Users\joose\source\repos\lobbyRouter\obj\Release\net5.0\lobbyRouter.genruntimeconfig.cache
