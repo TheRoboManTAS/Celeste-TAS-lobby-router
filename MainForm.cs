@@ -25,6 +25,7 @@ public partial class MainForm : Form
     {
         InitializeComponent();
         maxRestarts = new NumMenuItem(maxRestartCountToolStripMenuItem, -1, 1000, 0);
+        topNSolutions = new NumMenuItem(topNSolutionsToolStripMenuItem, 1, 1000, 0);
 
         LoadSettings();
         ParseFiles(false);
@@ -238,6 +239,7 @@ public partial class MainForm : Form
     }
 
     NumMenuItem maxRestarts;
+    NumMenuItem topNSolutions;
 
     SettingsManager manager;
 

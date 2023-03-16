@@ -41,6 +41,7 @@ namespace RoboRouter
             this.restartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlyRequiredRestartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxRestartCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.topNSolutionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lbl_startName = new System.Windows.Forms.Label();
             this.lbl_finishName = new System.Windows.Forms.Label();
             this.txt_startName = new System.Windows.Forms.TextBox();
@@ -148,10 +149,12 @@ namespace RoboRouter
             // 
             this.restartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.onlyRequiredRestartsToolStripMenuItem,
-            this.maxRestartCountToolStripMenuItem});
+            this.maxRestartCountToolStripMenuItem,
+            this.topNSolutionsToolStripMenuItem
+            });
             this.restartsToolStripMenuItem.Name = "restartsToolStripMenuItem";
             this.restartsToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
-            this.restartsToolStripMenuItem.Text = "Restarts";
+            this.restartsToolStripMenuItem.Text = "Settings";
             // 
             // onlyRequiredRestartsToolStripMenuItem
             // 
@@ -165,6 +168,12 @@ namespace RoboRouter
             this.maxRestartCountToolStripMenuItem.Name = "maxRestartCountToolStripMenuItem";
             this.maxRestartCountToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.maxRestartCountToolStripMenuItem.Text = "Max Restart Count";
+            // 
+            // topNSolutionsToolStripMenuItem
+            // 
+            this.topNSolutionsToolStripMenuItem.Name = "topNSolutionsToolStripMenuItem";
+            this.topNSolutionsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.topNSolutionsToolStripMenuItem.Text = "Number of Solutions";
             // 
             // lbl_startName
             // 
@@ -335,6 +344,7 @@ namespace RoboRouter
         private System.Windows.Forms.ToolStripMenuItem logResultsToTextFilesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem onlyRequiredRestartsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem maxRestartCountToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem topNSolutionsToolStripMenuItem;
         private System.Windows.Forms.NumericUpDown num_restartPenalty;
         private System.Windows.Forms.Label lbl_restartPenalty;
         //private System.Windows.Forms.ToolStripMenuItem disableResultSortingToolStripMenuItem;

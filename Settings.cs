@@ -21,6 +21,8 @@ public class Settings
     public bool RequiredRestarts = true;
     [Setting(Input = "maxRestarts.Value")]
     public int maxRestarts = -1;
+    [Setting(Input = "topNSolutions.Value")]
+    public int topNSolutions = 100;
 
     // [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
     // public bool DistinctTimings = true;

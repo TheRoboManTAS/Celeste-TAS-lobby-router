@@ -58,7 +58,9 @@ public class AlgRunner
         int index = 0;
         int visitCount = 0;
 
-        const int topNSolutions = 10;
+        for (int i = 0; i < settings.topNSolutions; i++) {
+            solutions.Add(new(new int[] {}, 99999999));
+        }
 
         Func<int, bool, bool> canRestart;
         if (infRestarts) {
@@ -87,10 +89,14 @@ public class AlgRunner
                     var truncated = trail.Take(index + 1).ToArray();
                     int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
                     consideredSolutions++;
-                    solutions.Add(new(truncated, time));
-                    if (consideredSolutions > topNSolutions) {
-                        solutions.Sort((x, y) => y.Item2.CompareTo(x.Item2));
-                        solutions.RemoveAt(0);
+                    if (time < solutions[settings.topNSolutions - 1].Item2) {
+                        for (int i = 0; i < settings.topNSolutions; i++) {
+                            if (time < solutions[i].Item2) {
+                                solutions.Insert(i, new(truncated, time));
+                                solutions.RemoveAt(settings.topNSolutions);
+                                break;
+                            }
+                        }
                     }
                 }
                 return;
@@ -157,8 +163,8 @@ public class AlgRunner
             }
         }
 
+        solutions.Reverse();
         timer.Stop();
-
 
         //if (!settings.DisableSorting)
         //    solutions = solutions.OrderByDescending(s => s.Item2).ToList();
