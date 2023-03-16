@@ -26,8 +26,8 @@ public class Settings
     // public bool DistinctTimings = true;
     [Setting(Input = "logResultsToTextFilesToolStripMenuItem.Checked")]
     public bool LogResults = false;
-    [Setting(Input = "disableResultSortingToolStripMenuItem.Checked")]
-    public bool DisableSorting = false;
+    //[Setting(Input = "disableResultSortingToolStripMenuItem.Checked")]
+    //public bool DisableSorting = false;
 
     public bool KnowsHelpTxt = false;
 }

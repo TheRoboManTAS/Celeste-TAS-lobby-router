@@ -160,8 +160,8 @@ public class AlgRunner
         timer.Stop();
 
 
-        if (!settings.DisableSorting)
-            solutions = solutions.OrderByDescending(s => s.Item2).ToList();
+        //if (!settings.DisableSorting)
+        //    solutions = solutions.OrderByDescending(s => s.Item2).ToList();
         // normal console output
         if (!settings.LogResults)
             foreach (var sol in solutions) {

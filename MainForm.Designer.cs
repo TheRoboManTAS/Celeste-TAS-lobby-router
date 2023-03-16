@@ -37,7 +37,7 @@ namespace RoboRouter
             this.outputToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             //this.distinctResultEndTimesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logResultsToTextFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.disableResultSortingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.disableResultSortingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlyRequiredRestartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxRestartCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -117,7 +117,8 @@ namespace RoboRouter
             this.outputToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             //this.distinctResultEndTimesToolStripMenuItem,
             this.logResultsToTextFilesToolStripMenuItem,
-            this.disableResultSortingToolStripMenuItem});
+            //this.disableResultSortingToolStripMenuItem
+            });
             this.outputToolStripMenuItem.Name = "outputToolStripMenuItem";
             this.outputToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
             this.outputToolStripMenuItem.Text = "Output";
@@ -138,10 +139,10 @@ namespace RoboRouter
             // 
             // disableResultSortingToolStripMenuItem
             // 
-            this.disableResultSortingToolStripMenuItem.Name = "disableResultSortingToolStripMenuItem";
-            this.disableResultSortingToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.disableResultSortingToolStripMenuItem.Text = "Disable Result Sorting";
-            this.disableResultSortingToolStripMenuItem.Click += new System.EventHandler(this.disableResultSortingToolStripMenuItem_Click);
+            //this.disableResultSortingToolStripMenuItem.Name = "disableResultSortingToolStripMenuItem";
+            //this.disableResultSortingToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            //this.disableResultSortingToolStripMenuItem.Text = "Disable Result Sorting";
+            //this.disableResultSortingToolStripMenuItem.Click += new System.EventHandler(this.disableResultSortingToolStripMenuItem_Click);
             // 
             // restartsToolStripMenuItem
             // 
@@ -336,6 +337,6 @@ namespace RoboRouter
         private System.Windows.Forms.ToolStripMenuItem maxRestartCountToolStripMenuItem;
         private System.Windows.Forms.NumericUpDown num_restartPenalty;
         private System.Windows.Forms.Label lbl_restartPenalty;
-        private System.Windows.Forms.ToolStripMenuItem disableResultSortingToolStripMenuItem;
+        //private System.Windows.Forms.ToolStripMenuItem disableResultSortingToolStripMenuItem;
     }
 }
