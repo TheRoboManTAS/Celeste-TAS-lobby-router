@@ -48,7 +48,8 @@ public class AlgRunner
 
         var solutions = new List<(int[], int)>();
 
-        int iterations = 0;
+        long iterations = 0;
+        int consideredSolutions = 0;
         int restartCount = 0;
         bool infRestarts = settings.maxRestarts < 0;
 
@@ -56,6 +57,8 @@ public class AlgRunner
         var canGo = Enumerable.Repeat(true, places.Length).ToArray();
         int index = 0;
         int visitCount = 0;
+
+        const int topNSolutions = 10;
 
         Func<int, bool, bool> canRestart;
         if (infRestarts) {
@@ -83,8 +86,12 @@ public class AlgRunner
                 if (visitCount == placeCount) {
                     var truncated = trail.Take(index + 1).ToArray();
                     int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
-                    if (!settings.DistinctTimings || solutions.All(s => time != s.Item2))
-                        solutions.Add(new(truncated, time));
+                    consideredSolutions++;
+                    solutions.Add(new(truncated, time));
+                    if (consideredSolutions > topNSolutions) {
+                        solutions.Sort((x, y) => y.Item2.CompareTo(x.Item2));
+                        solutions.RemoveAt(0);
+                    }
                 }
                 return;
             }
@@ -153,8 +160,6 @@ public class AlgRunner
         timer.Stop();
 
 
-        
-
         if (!settings.DisableSorting)
             solutions = solutions.OrderByDescending(s => s.Item2).ToList();
         // normal console output
@@ -173,9 +178,13 @@ public class AlgRunner
             Console.WriteLine("\nResults logged into " + file + "\n");
         }
 
-        Console.WriteLine($"Routing took " + timer.Elapsed);
-        Console.WriteLine(solutions.Count + " solutions");
-        Console.WriteLine($"Pathfind function called {iterations} times.");
+        Console.WriteLine("\nRouting took: " + timer.Elapsed);
+        Console.WriteLine("Pathfind function calls: "+ iterations);
+        Console.WriteLine("Solutions considered: " + consideredSolutions);
+        Console.WriteLine("Solutions displayed: " + solutions.Count);
+        Console.WriteLine("\n-- Settings used --");
+        Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
+        Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
 
 
         string ParseSolution((int[] route, int f) sol) =>
