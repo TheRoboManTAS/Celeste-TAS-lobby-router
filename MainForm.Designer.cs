@@ -35,7 +35,7 @@ namespace RoboRouter
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outputToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.distinctResultEndTimesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.distinctResultEndTimesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logResultsToTextFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disableResultSortingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -115,7 +115,7 @@ namespace RoboRouter
             // outputToolStripMenuItem
             // 
             this.outputToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.distinctResultEndTimesToolStripMenuItem,
+            //this.distinctResultEndTimesToolStripMenuItem,
             this.logResultsToTextFilesToolStripMenuItem,
             this.disableResultSortingToolStripMenuItem});
             this.outputToolStripMenuItem.Name = "outputToolStripMenuItem";
@@ -124,10 +124,10 @@ namespace RoboRouter
             // 
             // distinctResultEndTimesToolStripMenuItem
             // 
-            this.distinctResultEndTimesToolStripMenuItem.Name = "distinctResultEndTimesToolStripMenuItem";
-            this.distinctResultEndTimesToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.distinctResultEndTimesToolStripMenuItem.Text = "Distinct Result End Times";
-            this.distinctResultEndTimesToolStripMenuItem.Click += new System.EventHandler(this.distinctResultEndTimesToolStripMenuItem_Click);
+            //this.distinctResultEndTimesToolStripMenuItem.Name = "distinctResultEndTimesToolStripMenuItem";
+            //this.distinctResultEndTimesToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            //this.distinctResultEndTimesToolStripMenuItem.Text = "Distinct Result End Times";
+            //this.distinctResultEndTimesToolStripMenuItem.Click += new System.EventHandler(this.distinctResultEndTimesToolStripMenuItem_Click);
             // 
             // logResultsToTextFilesToolStripMenuItem
             // 
@@ -330,7 +330,7 @@ namespace RoboRouter
         private System.Windows.Forms.Label lbl_nameSeparators;
         private System.Windows.Forms.TextBox txt_nameSeparators;
         private System.Windows.Forms.Button btn_refresh;
-        private System.Windows.Forms.ToolStripMenuItem distinctResultEndTimesToolStripMenuItem;
+        //private System.Windows.Forms.ToolStripMenuItem distinctResultEndTimesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logResultsToTextFilesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem onlyRequiredRestartsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem maxRestartCountToolStripMenuItem;

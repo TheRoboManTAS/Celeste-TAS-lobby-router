@@ -22,8 +22,8 @@ public class Settings
     [Setting(Input = "maxRestarts.Value")]
     public int maxRestarts = -1;
 
-    [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
-    public bool DistinctTimings = true;
+    // [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
+    // public bool DistinctTimings = true;
     [Setting(Input = "logResultsToTextFilesToolStripMenuItem.Checked")]
     public bool LogResults = false;
     [Setting(Input = "disableResultSortingToolStripMenuItem.Checked")]
