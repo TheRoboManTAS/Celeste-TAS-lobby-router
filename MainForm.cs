@@ -25,6 +25,7 @@ public partial class MainForm : Form
     {
         InitializeComponent();
         maxRestarts = new NumMenuItem(maxRestartCountToolStripMenuItem, -1, 1000, 0);
+        topNSolutions = new NumMenuItem(topNSolutionsToolStripMenuItem, 1, 1000, 0);
 
         LoadSettings();
         ParseFiles(false);
@@ -238,6 +239,7 @@ public partial class MainForm : Form
     }
 
     NumMenuItem maxRestarts;
+    NumMenuItem topNSolutions;
 
     SettingsManager manager;
 
@@ -309,9 +311,9 @@ public partial class MainForm : Form
     }
 
     private void onlyRequiredRestartsToolStripMenuItem_Click(object sender, EventArgs e) => onlyRequiredRestartsToolStripMenuItem.Checked ^= true;
-    private void distinctResultEndTimesToolStripMenuItem_Click(object sender, EventArgs e) => distinctResultEndTimesToolStripMenuItem.Checked ^= true;
+    //private void distinctResultEndTimesToolStripMenuItem_Click(object sender, EventArgs e) => distinctResultEndTimesToolStripMenuItem.Checked ^= true;
     private void logResultsToTextFilesToolStripMenuItem_Click(object sender, EventArgs e) => logResultsToTextFilesToolStripMenuItem.Checked ^= true;
-    private void disableResultSortingToolStripMenuItem_Click(object sender, EventArgs e) => disableResultSortingToolStripMenuItem.Checked ^= true;
+    //private void disableResultSortingToolStripMenuItem_Click(object sender, EventArgs e) => disableResultSortingToolStripMenuItem.Checked ^= true;
 
     private void cbx_useTableInput_CheckedChanged(object sender, EventArgs e) => UpdateAccess();
 

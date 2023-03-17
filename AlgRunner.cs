@@ -48,7 +48,8 @@ public class AlgRunner
 
         var solutions = new List<(int[], int)>();
 
-        int iterations = 0;
+        long iterations = 0;
+        int consideredSolutions = 0;
         int restartCount = 0;
         bool infRestarts = settings.maxRestarts < 0;
 
@@ -56,6 +57,10 @@ public class AlgRunner
         var canGo = Enumerable.Repeat(true, places.Length).ToArray();
         int index = 0;
         int visitCount = 0;
+
+        for (int i = 0; i < settings.topNSolutions; i++) {
+            solutions.Add(new(new int[] {}, 99999999));
+        }
 
         Func<int, bool, bool> canRestart;
         if (infRestarts) {
@@ -83,8 +88,16 @@ public class AlgRunner
                 if (visitCount == placeCount) {
                     var truncated = trail.Take(index + 1).ToArray();
                     int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
-                    if (!settings.DistinctTimings || solutions.All(s => time != s.Item2))
-                        solutions.Add(new(truncated, time));
+                    consideredSolutions++;
+                    if (time < solutions[settings.topNSolutions - 1].Item2) {
+                        for (int i = 0; i < settings.topNSolutions; i++) {
+                            if (time < solutions[i].Item2) {
+                                solutions.Insert(i, new(truncated, time));
+                                solutions.RemoveAt(settings.topNSolutions);
+                                break;
+                            }
+                        }
+                    }
                 }
                 return;
             }
@@ -150,13 +163,11 @@ public class AlgRunner
             }
         }
 
+        solutions.Reverse();
         timer.Stop();
 
-
-        
-
-        if (!settings.DisableSorting)
-            solutions = solutions.OrderByDescending(s => s.Item2).ToList();
+        //if (!settings.DisableSorting)
+        //    solutions = solutions.OrderByDescending(s => s.Item2).ToList();
         // normal console output
         if (!settings.LogResults)
             foreach (var sol in solutions) {
@@ -173,9 +184,13 @@ public class AlgRunner
             Console.WriteLine("\nResults logged into " + file + "\n");
         }
 
-        Console.WriteLine($"Routing took " + timer.Elapsed);
-        Console.WriteLine(solutions.Count + " solutions");
-        Console.WriteLine($"Pathfind function called {iterations} times.");
+        Console.WriteLine("\nRouting took: " + timer.Elapsed);
+        Console.WriteLine("Pathfind function calls: "+ iterations);
+        Console.WriteLine("Solutions considered: " + consideredSolutions);
+        Console.WriteLine("Solutions displayed: " + solutions.Count);
+        Console.WriteLine("\n-- Settings used --");
+        Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
+        Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
 
 
         string ParseSolution((int[] route, int f) sol) =>

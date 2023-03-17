@@ -21,13 +21,15 @@ public class Settings
     public bool RequiredRestarts = true;
     [Setting(Input = "maxRestarts.Value")]
     public int maxRestarts = -1;
+    [Setting(Input = "topNSolutions.Value")]
+    public int topNSolutions = 100;
 
-    [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
-    public bool DistinctTimings = true;
+    // [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
+    // public bool DistinctTimings = true;
     [Setting(Input = "logResultsToTextFilesToolStripMenuItem.Checked")]
     public bool LogResults = false;
-    [Setting(Input = "disableResultSortingToolStripMenuItem.Checked")]
-    public bool DisableSorting = false;
+    //[Setting(Input = "disableResultSortingToolStripMenuItem.Checked")]
+    //public bool DisableSorting = false;
 
     public bool KnowsHelpTxt = false;
 }
