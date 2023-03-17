@@ -210,14 +210,29 @@ public class AlgRunner
         //if (!settings.DisableSorting)
         //    solutions = solutions.OrderByDescending(s => s.Item2).ToList();
         // normal console output
-
-       
+        
+        int placementPadding = solutions.Count.ToString().Length;
+        var bestRestartSolutions = new List<((int[], int), int)>();
+        for (int i = 0; i < Math.Min(5, Math.Max(0, settings.maxRestarts)); i++) {
+            bestRestartSolutions.Add(new(new(new int[] {}, -1), -1));
+        }
         if (!settings.LogResults) {
-            Console.WriteLine("\nFastest Routes: ");
-            foreach (var sol in solutions) {
-                var split = ParseSolution(sol).Split(':');
-                Output.WriteCol(split[0] + ':', Color.LightSkyBlue);
-                Output.WriteCol(split[1] + '\n', Color.White);
+            Console.WriteLine("\n-- Fastest Routes --");
+            for (int i = 0; i < solutions.Count; i++) {
+                PrintSolution(solutions[i], solutions.Count - i);
+                int restarts = solutions[i].Item1.Where(x => x.Equals(0)).Count() - 1;
+                if (restarts > 0) {
+                    bestRestartSolutions[restarts - 1] = new(solutions[i], solutions.Count - i);
+                }                
+            }
+            Console.WriteLine("\n-- Restart Solutions --");
+            for (int i = 0; i < bestRestartSolutions.Count; i++) {
+                if (bestRestartSolutions[i].Item2 > 0) {
+                    Console.WriteLine($"Best solution with {i + 1} restart(s):");
+                    PrintSolution(bestRestartSolutions[i].Item1, bestRestartSolutions[i].Item2);
+                } else {
+                    Console.WriteLine($"No solution with {i + 1} restart(s) found in the top {settings.topNSolutions} solutions.");
+                }   
             }
         } else {
             Directory.CreateDirectory("Results");
@@ -225,21 +240,35 @@ public class AlgRunner
             File.Create(file).Close();
             File.WriteAllText(file,
                 string.Join('\n', solutions.Select(sol => ParseSolution(sol))));
-            Console.WriteLine("\nResults logged into " + file + "\n");
+            Console.WriteLine("\nResults logged into " + file);
         }
-        Console.WriteLine("\n-- Settings used --");
+        Console.WriteLine("\n-- Settings --");
         Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
         Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
-        Console.WriteLine("Number of Solutions: " + solutions.Count);
+        Console.WriteLine("Number of Solutions: " + settings.topNSolutions);
 
-        Console.WriteLine("\nRouting took: " + timer.Elapsed);
+        Console.WriteLine("\n-- Statistics --");
+        Console.WriteLine("Routing took: " + timer.Elapsed);
         Console.WriteLine("Pathfind function calls: "+ iterations);
         Console.WriteLine("Branches cut: " + cutBranches);
-        Console.WriteLine("Complete solutions found: " + consideredSolutions);
+        Console.WriteLine("Full solutions calculated: " + consideredSolutions);
 
         string ParseSolution((int[] route, int f) sol) =>
-            $"{Misc.AsSeconds(sol.f)}({sol.f}) with: {string.Join(", ", sol.route.Skip(1).Select(p => (p == start ? "RESTART" : places[p])))}";
-
+            $"{Misc.AsSeconds(sol.f)}({sol.f}): {string.Join(", ", sol.route.Skip(1).Select(p => (p == start ? "[R]" : places[p])))}";
+        
+        void PrintSolution((int[] route, int f) sol, int place) {
+            var split = ParseSolution(sol).Split(':');
+            Output.WriteCol(place.ToString().PadLeft(placementPadding) + ") ", Color.Gray);
+            Output.WriteCol(split[0] + ':', Color.LightSkyBlue);
+            var routePieces = split[1].Split("[R]");
+            for (int p = 0; p < routePieces.Count(); p++) {
+                Output.WriteCol(routePieces[p], Color.White);
+                if (p < routePieces.Count() - 1) {
+                    Output.WriteCol("[R]", Color.Orange);    
+                }                
+            }
+            Console.WriteLine();
+        }
 
         // give debug advice if no solutions
         if (solutions.Count == 0) {
