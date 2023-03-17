@@ -47,9 +47,13 @@ public class AlgRunner
         int finish = settings.UseTableInput ? places.Length - 1 : Array.IndexOf(places, finishFile);
 
         var solutions = new List<(int[], int)>();
+        for (int i = 0; i < settings.topNSolutions; i++) {
+            solutions.Add(new(new int[] {}, 99999999));
+        }
 
         long iterations = 0;
         int consideredSolutions = 0;
+        int cutBranches = 0;
         int restartCount = 0;
         bool infRestarts = settings.maxRestarts < 0;
 
@@ -57,10 +61,6 @@ public class AlgRunner
         var canGo = Enumerable.Repeat(true, places.Length).ToArray();
         int index = 0;
         int visitCount = 0;
-
-        for (int i = 0; i < settings.topNSolutions; i++) {
-            solutions.Add(new(new int[] {}, 99999999));
-        }
 
         Func<int, bool, bool> canRestart;
         if (infRestarts) {
@@ -74,6 +74,30 @@ public class AlgRunner
                 : (pos, must) => (pos != start) & (restartCount < settings.maxRestarts);
         }
 
+        var lowestTimes = new List<int>();
+        for (int n = 0; n < nodes.Count(); n++) {
+            lowestTimes.Add(99999999);
+        }
+
+        // Determine lowest incoming time for each node
+        lowestTimes[0] = 0;
+        for (int n = 0; n < nodes.Count(); n++) {
+            for (int t = 0; t < nodes[n].targets.Count(); t++) {
+                if (lowestTimes[nodes[n].targets[t]] > nodes[n].times[t]) {
+                    lowestTimes[nodes[n].targets[t]] = nodes[n].times[t];
+                }
+            }
+        }
+
+        int globalLowerBound = 0;
+
+        for (int i = 0; i < lowestTimes.Count; i++) {
+            globalLowerBound += lowestTimes[i];
+        }
+
+        int localLowerBound = globalLowerBound;
+
+        Console.WriteLine("Current fastest route:");
         var timer = System.Diagnostics.Stopwatch.StartNew();
         
         PathFind(start);
@@ -91,7 +115,10 @@ public class AlgRunner
                     consideredSolutions++;
                     if (time < solutions[settings.topNSolutions - 1].Item2) {
                         for (int i = 0; i < settings.topNSolutions; i++) {
-                            if (time < solutions[i].Item2) {
+                            if (time < solutions[i].Item2) { 
+                                if (i == 0) {
+                                    Console.WriteLine(ParseSolution(new(truncated, time)));
+                                }
                                 solutions.Insert(i, new(truncated, time));
                                 solutions.RemoveAt(settings.topNSolutions);
                                 break;
@@ -101,6 +128,14 @@ public class AlgRunner
                 }
                 return;
             }
+
+            if (localLowerBound >= solutions[settings.topNSolutions - 1].Item2) {
+                cutBranches++;
+                return;
+            }
+
+            int addedTime = index != 0 ? trail[index] == start ? restartPenalty : nodes[trail[index - 1]].FramesTo(trail[index]) : 0;
+            int updateLowerBound = addedTime - lowestTimes[pos];
 
             var targets = nodes[pos].targets;
 
@@ -125,12 +160,14 @@ public class AlgRunner
                 visitCount++;
                 index++;
                 canGo[deadEnd] = false;
+                localLowerBound += updateLowerBound;
 
                 PathFind(deadEnd);
 
                 visitCount--;
                 index--;
                 canGo[deadEnd] = true;
+                localLowerBound -= updateLowerBound;
                 return;
             }
 
@@ -142,12 +179,14 @@ public class AlgRunner
                     visitCount++;
                     index++;
                     canGo[target] = false;
+                    localLowerBound += updateLowerBound;
 
                     PathFind(targets[i]);
 
                     visitCount--;
                     index--;
                     canGo[target] = true;
+                    localLowerBound -= updateLowerBound;
 
                     mustRestart = false;
                 }
@@ -157,7 +196,9 @@ public class AlgRunner
             if (canRestart(pos, mustRestart)) {
                 index++;
                 restartCount++;
+                localLowerBound += updateLowerBound;
                 PathFind(start);
+                localLowerBound -= updateLowerBound;
                 restartCount--;
                 index--;
             }
@@ -169,13 +210,16 @@ public class AlgRunner
         //if (!settings.DisableSorting)
         //    solutions = solutions.OrderByDescending(s => s.Item2).ToList();
         // normal console output
-        if (!settings.LogResults)
+
+       
+        if (!settings.LogResults) {
+            Console.WriteLine("\nFastest Routes: ");
             foreach (var sol in solutions) {
                 var split = ParseSolution(sol).Split(':');
                 Output.WriteCol(split[0] + ':', Color.LightSkyBlue);
                 Output.WriteCol(split[1] + '\n', Color.White);
             }
-        else {
+        } else {
             Directory.CreateDirectory("Results");
             var file = "Results\\" + DateTime.Now.ToString().Replace('/', '-').Replace(':', '.') + ".txt";
             File.Create(file).Close();
@@ -183,15 +227,15 @@ public class AlgRunner
                 string.Join('\n', solutions.Select(sol => ParseSolution(sol))));
             Console.WriteLine("\nResults logged into " + file + "\n");
         }
-
-        Console.WriteLine("\nRouting took: " + timer.Elapsed);
-        Console.WriteLine("Pathfind function calls: "+ iterations);
-        Console.WriteLine("Solutions considered: " + consideredSolutions);
-        Console.WriteLine("Solutions displayed: " + solutions.Count);
         Console.WriteLine("\n-- Settings used --");
         Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
         Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
+        Console.WriteLine("Number of Solutions: " + solutions.Count);
 
+        Console.WriteLine("\nRouting took: " + timer.Elapsed);
+        Console.WriteLine("Pathfind function calls: "+ iterations);
+        Console.WriteLine("Branches cut: " + cutBranches);
+        Console.WriteLine("Complete solutions found: " + consideredSolutions);
 
         string ParseSolution((int[] route, int f) sol) =>
             $"{Misc.AsSeconds(sol.f)}({sol.f}) with: {string.Join(", ", sol.route.Skip(1).Select(p => (p == start ? "RESTART" : places[p])))}";
