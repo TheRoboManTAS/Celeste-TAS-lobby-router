@@ -213,7 +213,7 @@ public class AlgRunner
         
         int placementPadding = solutions.Count.ToString().Length;
         var bestRestartSolutions = new List<((int[], int), int)>();
-        for (int i = 0; i < Math.Min(5, Math.Max(0, settings.maxRestarts)); i++) {
+        for (int i = 0; i < nodes.Length; i++) {
             bestRestartSolutions.Add(new(new(new int[] {}, -1), -1));
         }
         if (!settings.LogResults) {
@@ -221,18 +221,16 @@ public class AlgRunner
             for (int i = 0; i < solutions.Count; i++) {
                 PrintSolution(solutions[i], solutions.Count - i);
                 int restarts = solutions[i].Item1.Where(x => x.Equals(0)).Count() - 1;
-                if (restarts > 0) {
-                    bestRestartSolutions[restarts - 1] = new(solutions[i], solutions.Count - i);
+                if (restarts >= 0) {
+                    bestRestartSolutions[restarts] = new(solutions[i], solutions.Count - i);
                 }                
             }
-            Console.WriteLine("\n-- Restart Solutions --");
+            Console.WriteLine("\n-- Best Restart Solutions --");
             for (int i = 0; i < bestRestartSolutions.Count; i++) {
                 if (bestRestartSolutions[i].Item2 > 0) {
-                    Console.WriteLine($"Best solution with {i + 1} restart(s):");
+                    Console.WriteLine($"With {i} restart(s):");
                     PrintSolution(bestRestartSolutions[i].Item1, bestRestartSolutions[i].Item2);
-                } else {
-                    Console.WriteLine($"No solution with {i + 1} restart(s) found in the top {settings.topNSolutions} solutions.");
-                }   
+                }
             }
         } else {
             Directory.CreateDirectory("Results");
