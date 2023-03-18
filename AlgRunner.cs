@@ -218,7 +218,8 @@ public class AlgRunner
         }
         if (!settings.LogResults) {
             Console.WriteLine("\n-- Fastest Routes --");
-            for (int i = 0; i < solutions.Count; i++) {
+            int firstRealSolutionIndex = Math.Max(0, solutions.Count - consideredSolutions);
+            for (int i = firstRealSolutionIndex; i < solutions.Count; i++) {
                 PrintSolution(solutions[i], solutions.Count - i);
                 int restarts = solutions[i].Item1.Where(x => x.Equals(0)).Count() - 1;
                 if (restarts >= 0) {
