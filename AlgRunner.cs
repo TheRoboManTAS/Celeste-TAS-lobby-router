@@ -233,6 +233,7 @@ public class AlgRunner
                     PrintSolution(bestRestartSolutions[i].Item1, bestRestartSolutions[i].Item2);
                 }
             }
+            Console.WriteLine("No solution with different amounts of restarts found.");
         } else {
             Directory.CreateDirectory("Results");
             var file = "Results\\" + DateTime.Now.ToString().Replace('/', '-').Replace(':', '.') + ".txt";
