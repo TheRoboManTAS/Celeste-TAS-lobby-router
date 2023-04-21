@@ -32,6 +32,11 @@ public partial class MainForm : Form
         UpdateStartAndEnd(false);
         UpdateAccess();
 
+        if (txt_newConnectionsInput.Text == NewConnectionsInputPlaceholder)
+        {
+            txt_newConnectionsInput.ForeColor = System.Drawing.Color.Gray;
+        }
+
         Output.Initialize();
         Select();
         txt_directory.MouseEnter += (_, _) => mouseOnDirBox = true;
@@ -233,9 +238,20 @@ public partial class MainForm : Form
 
     public void UpdateAccess()
     {
-        foreach (var ctrl in new Control[] { btn_fetchTimes, txt_nameSeparators, txt_startName, txt_finishName, btn_refresh, num_restartPenalty, txt_directory })
+        foreach (var ctrl in new Control[] { btn_fetchTimes, txt_nameSeparators, txt_startName, txt_finishName, btn_refresh, num_restartPenalty, txt_directory }) {
             ctrl.Enabled = !cbx_useTableInput.Checked;
+        }
+
+        foreach (var ctrl in new Control[] { cbx_newConnectionsMode, txt_newConnectionsInput }) {
+            ctrl.Enabled = cbx_useTableInput.Checked;
+        }
+
+        if (!cbx_useTableInput.Checked) {
+            cbx_newConnectionsMode.Checked = false;
+        }
+
         txt_tableInput.Enabled = cbx_useTableInput.Checked;
+        txt_newConnectionsInput.Enabled = cbx_newConnectionsMode.Checked;
     }
 
     NumMenuItem maxRestarts;
@@ -267,6 +283,24 @@ public partial class MainForm : Form
         using var file = new FileStream("settings.xml", FileMode.OpenOrCreate);
         file.SetLength(0);
         new XmlSerializer(typeof(Settings)).Serialize(file, settings);
+    }
+
+    private void txt_newConnectionsInput_Enter(object sender, EventArgs e)
+    {
+        if (txt_newConnectionsInput.Text == NewConnectionsInputPlaceholder)
+        {
+            txt_newConnectionsInput.Text = "";
+        }
+        txt_newConnectionsInput.ForeColor = System.Drawing.Color.Black;
+    }
+
+    private void txt_newConnectionsInput_Leave(object sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(txt_newConnectionsInput.Text))
+        {
+            txt_newConnectionsInput.Text = NewConnectionsInputPlaceholder;
+            txt_newConnectionsInput.ForeColor = System.Drawing.Color.Gray;
+        }
     }
 
     private void btn_route_Click(object sender, EventArgs e)
@@ -316,11 +350,11 @@ public partial class MainForm : Form
 
     private void onlyRequiredRestartsToolStripMenuItem_Click(object sender, EventArgs e) => onlyRequiredRestartsToolStripMenuItem.Checked ^= true;
     //private void distinctResultEndTimesToolStripMenuItem_Click(object sender, EventArgs e) => distinctResultEndTimesToolStripMenuItem.Checked ^= true;
-    private void findNewConnectionsModeMenuItem_Click(object sender, EventArgs e) => findNewConnectionsModeMenuItem.Checked ^= true;
     private void logResultsToTextFilesToolStripMenuItem_Click(object sender, EventArgs e) => logResultsToTextFilesToolStripMenuItem.Checked ^= true;
     //private void disableResultSortingToolStripMenuItem_Click(object sender, EventArgs e) => disableResultSortingToolStripMenuItem.Checked ^= true;
 
     private void cbx_useTableInput_CheckedChanged(object sender, EventArgs e) => UpdateAccess();
+    private void cbx_newConnectionsMode_CheckedChanged(object sender, EventArgs e) => UpdateAccess();
 
     private void helpToolStripMenuItem_Click(object sender, EventArgs e)
     {

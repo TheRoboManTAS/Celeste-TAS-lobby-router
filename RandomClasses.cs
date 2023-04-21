@@ -60,3 +60,13 @@ public struct ConnectionResult {
         timeNeeded = _timeNeeded;
     }
 }
+
+public struct Connection {
+    public int start;
+    public int end;
+
+    public Connection(int _start, int _end) {
+        start = _start;
+        end = _end;
+    }
+}

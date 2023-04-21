@@ -20,6 +20,8 @@ namespace RoboRouter
             base.Dispose(disposing);
         }
 
+        string NewConnectionsInputPlaceholder = "Format: 13-18, 0-20";
+
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -42,7 +44,6 @@ namespace RoboRouter
             this.onlyRequiredRestartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maxRestartCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.topNSolutionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.findNewConnectionsModeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lbl_startName = new System.Windows.Forms.Label();
             this.lbl_finishName = new System.Windows.Forms.Label();
             this.txt_startName = new System.Windows.Forms.TextBox();
@@ -50,6 +51,9 @@ namespace RoboRouter
             this.cbx_useTableInput = new System.Windows.Forms.CheckBox();
             this.txt_tableInput = new System.Windows.Forms.RichTextBox();
             this.lbl_tableInput = new System.Windows.Forms.Label();
+            this.cbx_newConnectionsMode = new System.Windows.Forms.CheckBox();
+            this.txt_newConnectionsInput = new System.Windows.Forms.TextBox();
+            this.lbl_newConnectionsInput = new System.Windows.Forms.Label();
             this.lbl_nameSeparators = new System.Windows.Forms.Label();
             this.txt_nameSeparators = new System.Windows.Forms.TextBox();
             this.btn_refresh = new System.Windows.Forms.Button();
@@ -61,7 +65,7 @@ namespace RoboRouter
             // 
             // txt_directory
             // 
-            this.txt_directory.Location = new System.Drawing.Point(151, 237);
+            this.txt_directory.Location = new System.Drawing.Point(151, 437);
             this.txt_directory.Name = "txt_directory";
             this.txt_directory.Size = new System.Drawing.Size(228, 23);
             this.txt_directory.TabIndex = 0;
@@ -69,7 +73,7 @@ namespace RoboRouter
             // lbl_directory
             // 
             this.lbl_directory.AutoSize = true;
-            this.lbl_directory.Location = new System.Drawing.Point(150, 219);
+            this.lbl_directory.Location = new System.Drawing.Point(150, 419);
             this.lbl_directory.Name = "lbl_directory";
             this.lbl_directory.Size = new System.Drawing.Size(98, 15);
             this.lbl_directory.TabIndex = 1;
@@ -151,8 +155,7 @@ namespace RoboRouter
             this.restartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.onlyRequiredRestartsToolStripMenuItem,
             this.maxRestartCountToolStripMenuItem,
-            this.topNSolutionsToolStripMenuItem,
-            this.findNewConnectionsModeMenuItem
+            this.topNSolutionsToolStripMenuItem
             });
             this.restartsToolStripMenuItem.Name = "restartsToolStripMenuItem";
             this.restartsToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
@@ -176,13 +179,6 @@ namespace RoboRouter
             this.topNSolutionsToolStripMenuItem.Name = "topNSolutionsToolStripMenuItem";
             this.topNSolutionsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.topNSolutionsToolStripMenuItem.Text = "Number of Solutions";
-            // 
-            // findNewConnectionsModeMenuItem
-            // 
-            this.findNewConnectionsModeMenuItem.Name = "findNewConnectionsModeMenuItem";
-            this.findNewConnectionsModeMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.findNewConnectionsModeMenuItem.Text = "Find New Connections Mode";
-            this.findNewConnectionsModeMenuItem.Click += new System.EventHandler(this.findNewConnectionsModeMenuItem_Click);
             // 
             // lbl_startName
             // 
@@ -224,15 +220,15 @@ namespace RoboRouter
             this.cbx_useTableInput.Name = "cbx_useTableInput";
             this.cbx_useTableInput.Size = new System.Drawing.Size(106, 19);
             this.cbx_useTableInput.TabIndex = 11;
-            this.cbx_useTableInput.Text = "Use Table Input";
+            this.cbx_useTableInput.Text = "Use Table Input (Secondary method)";
             this.cbx_useTableInput.UseVisualStyleBackColor = true;
             this.cbx_useTableInput.CheckedChanged += new System.EventHandler(this.cbx_useTableInput_CheckedChanged);
             // 
             // txt_tableInput
             // 
-            this.txt_tableInput.Location = new System.Drawing.Point(150, 82);
+            this.txt_tableInput.Location = new System.Drawing.Point(150, 90);
             this.txt_tableInput.Name = "txt_tableInput";
-            this.txt_tableInput.Size = new System.Drawing.Size(231, 126);
+            this.txt_tableInput.Size = new System.Drawing.Size(666, 318);
             this.txt_tableInput.TabIndex = 12;
             this.txt_tableInput.Text = "";
             this.txt_tableInput.WordWrap = false;
@@ -240,11 +236,41 @@ namespace RoboRouter
             // lbl_tableInput
             // 
             this.lbl_tableInput.AutoSize = true;
-            this.lbl_tableInput.Location = new System.Drawing.Point(147, 59);
+            this.lbl_tableInput.Location = new System.Drawing.Point(147, 65);
             this.lbl_tableInput.Name = "lbl_tableInput";
             this.lbl_tableInput.Size = new System.Drawing.Size(197, 15);
             this.lbl_tableInput.TabIndex = 13;
-            this.lbl_tableInput.Text = "Table Input (Secondary use method)";
+            this.lbl_tableInput.Text = "Table Input";
+            // 
+            // cbx_newConnectionsMode
+            // 
+            this.cbx_newConnectionsMode.AutoSize = true;
+            this.cbx_newConnectionsMode.Location = new System.Drawing.Point(390, 35);
+            this.cbx_newConnectionsMode.Name = "cbx_newConnectionsMode";
+            this.cbx_newConnectionsMode.Size = new System.Drawing.Size(106, 19);
+            this.cbx_newConnectionsMode.TabIndex = 19;
+            this.cbx_newConnectionsMode.Text = "Test New Connections";
+            this.cbx_newConnectionsMode.UseVisualStyleBackColor = true;
+            this.cbx_newConnectionsMode.CheckedChanged += new System.EventHandler(this.cbx_newConnectionsMode_CheckedChanged);
+            // 
+            // txt_newConnectionsInput
+            // 
+            this.txt_newConnectionsInput.Location = new System.Drawing.Point(465, 62);
+            this.txt_newConnectionsInput.Name = "txt_newConnectionsInput";
+            this.txt_newConnectionsInput.Size = new System.Drawing.Size(350, 23);
+            this.txt_newConnectionsInput.TabIndex = 21;
+            this.txt_newConnectionsInput.Enter += new System.EventHandler(this.txt_newConnectionsInput_Enter);
+            this.txt_newConnectionsInput.Leave += new System.EventHandler(this.txt_newConnectionsInput_Leave);
+            this.txt_newConnectionsInput.Text = "Format: 13-18, 0-20";
+            // 
+            // lbl_newConnectionsInput
+            // 
+            this.lbl_newConnectionsInput.AutoSize = true;
+            this.lbl_newConnectionsInput.Location = new System.Drawing.Point(387, 65);
+            this.lbl_newConnectionsInput.Name = "lbl_newConnectionsInput";
+            this.lbl_newConnectionsInput.Size = new System.Drawing.Size(197, 15);
+            this.lbl_newConnectionsInput.TabIndex = 20;
+            this.lbl_newConnectionsInput.Text = "Connections";
             // 
             // lbl_nameSeparators
             // 
@@ -264,7 +290,7 @@ namespace RoboRouter
             // 
             // btn_refresh
             // 
-            this.btn_refresh.Location = new System.Drawing.Point(150, 271);
+            this.btn_refresh.Location = new System.Drawing.Point(390, 419);
             this.btn_refresh.Name = "btn_refresh";
             this.btn_refresh.Size = new System.Drawing.Size(111, 41);
             this.btn_refresh.TabIndex = 16;
@@ -274,7 +300,7 @@ namespace RoboRouter
             // 
             // num_restartPenalty
             // 
-            this.num_restartPenalty.Location = new System.Drawing.Point(273, 288);
+            this.num_restartPenalty.Location = new System.Drawing.Point(513, 436);
             this.num_restartPenalty.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -287,7 +313,7 @@ namespace RoboRouter
             // lbl_restartPenalty
             // 
             this.lbl_restartPenalty.AutoSize = true;
-            this.lbl_restartPenalty.Location = new System.Drawing.Point(273, 270);
+            this.lbl_restartPenalty.Location = new System.Drawing.Point(513, 418);
             this.lbl_restartPenalty.Name = "lbl_restartPenalty";
             this.lbl_restartPenalty.Size = new System.Drawing.Size(85, 15);
             this.lbl_restartPenalty.TabIndex = 18;
@@ -298,7 +324,7 @@ namespace RoboRouter
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Silver;
-            this.ClientSize = new System.Drawing.Size(394, 325);
+            this.ClientSize = new System.Drawing.Size(830, 474);
             this.Controls.Add(this.lbl_restartPenalty);
             this.Controls.Add(this.num_restartPenalty);
             this.Controls.Add(this.btn_refresh);
@@ -307,6 +333,9 @@ namespace RoboRouter
             this.Controls.Add(this.lbl_tableInput);
             this.Controls.Add(this.txt_tableInput);
             this.Controls.Add(this.cbx_useTableInput);
+            this.Controls.Add(this.lbl_newConnectionsInput);
+            this.Controls.Add(this.txt_newConnectionsInput);
+            this.Controls.Add(this.cbx_newConnectionsMode);
             this.Controls.Add(this.txt_finishName);
             this.Controls.Add(this.txt_startName);
             this.Controls.Add(this.lbl_finishName);
@@ -346,6 +375,9 @@ namespace RoboRouter
         private System.Windows.Forms.CheckBox cbx_useTableInput;
         private System.Windows.Forms.RichTextBox txt_tableInput;
         private System.Windows.Forms.Label lbl_tableInput;
+        private System.Windows.Forms.CheckBox cbx_newConnectionsMode;
+        private System.Windows.Forms.TextBox txt_newConnectionsInput;
+        private System.Windows.Forms.Label lbl_newConnectionsInput;
         private System.Windows.Forms.Label lbl_nameSeparators;
         private System.Windows.Forms.TextBox txt_nameSeparators;
         private System.Windows.Forms.Button btn_refresh;
@@ -354,7 +386,6 @@ namespace RoboRouter
         private System.Windows.Forms.ToolStripMenuItem onlyRequiredRestartsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem maxRestartCountToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem topNSolutionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem findNewConnectionsModeMenuItem;
         private System.Windows.Forms.NumericUpDown num_restartPenalty;
         private System.Windows.Forms.Label lbl_restartPenalty;
         //private System.Windows.Forms.ToolStripMenuItem disableResultSortingToolStripMenuItem;

@@ -1,4 +1,6 @@
-﻿namespace RoboRouter;
+﻿using System.Text.RegularExpressions;
+
+namespace RoboRouter;
 public class AlgRunner
 {
     public Settings settings;
@@ -550,46 +552,104 @@ public class AlgRunner
         return solutions[0];
     }
 
+    Regex parseConnectionInput = new(@"^(\s*\d+\s*-\s*\d+\s*)(\s*,\s*\d+\s*-\s*\d+\s*)*$");
+
+    public List<Connection> ParseConnectionInput(string input) {
+        var connections = new List<Connection>();
+
+        if (!parseConnectionInput.Match(input).Success) {
+            Console.WriteLine($"Warning: Failed to parse input numbers ({input}). Make sure to use the correct format: e.g. 13-18, 0-20, ...");
+            return connections;
+        }
+
+        string cleanedInput = new string(input.Where(c => !char.IsWhiteSpace(c)).ToArray());
+        string[] connectionStrings = cleanedInput.Split(',');
+
+        foreach (string connectionString in connectionStrings)
+        {
+            string[] startAndEnd = connectionString.Split('-');
+            int start;
+            int end;
+            if (!(Array.Exists(places, element => element == startAndEnd[0]) && Array.Exists(places, element => element == startAndEnd[1]))) {
+                Console.WriteLine($"Warning: Start or end of connection doesn't exist ({connectionString}). Skipping provided connection.");
+                continue;
+            }
+            if (!int.TryParse(startAndEnd[0], out start))
+            {
+                Console.WriteLine($"Warning: Failed to parse one of the input numbers ({startAndEnd[0]}). Skipping rest of Input.");
+                return connections;
+            }
+            if (!int.TryParse(startAndEnd[1], out end))
+            {
+                Console.WriteLine($"Warning: Failed to parse one of the input numbers ({startAndEnd[1]}). Skipping rest of Input.");
+                return connections;
+            }
+            connections.Add(new Connection(start, end));
+        }
+
+        return connections;
+    }
+
     public void FindNewConnections() {
         FileInfo[] originalFileArray = DeepCopyFileInfoArray(files);
         Output.SetColor(Color.White);
         Console.WriteLine("-- Find New Connections Mode --");
         Console.WriteLine("Solving lobby to get reference solution...");
         Solution bestSolution = TestConnection();
-
         Console.WriteLine("\nReference Solution: ");
         PrintSolution(bestSolution);
+        Console.WriteLine();
+
+        var connections = new List<Connection>();
+        string input = settings.NewConnectionsInput;
+        if (!(input.StartsWith("Format:") || input.Length <= 0)) {
+            connections = ParseConnectionInput(input);
+        } else {
+            // Test all connections on empty input
+            Console.WriteLine("Test all connections on empty input");
+            for (int testStart = 0; testStart < places.Length - 1; testStart++) {
+                for (int testEnd = 1; testEnd < places.Length; testEnd++) {
+                    connections.Add(new Connection(testStart, testEnd));
+                }
+            }
+        }
+
+        if (connections.Count == 0) {
+            Console.WriteLine("No connections to test.");
+            return;
+        }
+
+        Console.WriteLine("Connections to test: " + connections.Count);
 
         var usefulConnections = new List<ConnectionResult>();
         int frameDifferenceThreshold = 0;
-        for (int testStart = 0; testStart < places.Length - 1; testStart++) {
-            for (int testEnd = 1; testEnd < places.Length; testEnd++) {
-                string connectionName = testStart + "-" + testEnd;
-                
-                // Don't test invalid connections
-                if (testEnd == testStart || testStart == 0 && testEnd == places.Length) {
-                    Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
-                    continue;
-                }
-                // Don't test connections that are part of the input files
-                if (ConnectionExistsInFileInfos(testStart.ToString(), testEnd.ToString(), originalFileArray)) {
-                    Console.WriteLine($"\nSkipping test for {connectionName}, Reason: Part of input");
-                    continue;
-                }
 
-                Console.WriteLine($"\n-- Testing new connection: {connectionName} --");
-                files = DeepCopyFileInfoArray(originalFileArray);
-                EditFilesToTestNewConnection(testStart.ToString(), testEnd.ToString());
-                Solution testSolution = TestConnection();
-                int frameDifference = bestSolution.time - testSolution.time;
-                if (frameDifference < frameDifferenceThreshold) {
-                    Console.WriteLine($"Connection not useful, because it would need to be {frameDifference}f (or faster) to match (or beat) current best solution.");
-                } else {
-                    usefulConnections.Add(new ConnectionResult(connectionName, ParseSolution(testSolution), frameDifference));
-                    Console.WriteLine($"Best route using tested connection (assuming 0f for {connectionName}):");
-                    PrintSolution(testSolution);
-                    Console.WriteLine($"Connection {connectionName} needs to be {frameDifference}f (or faster) to match (or beat) current best solution.");
-                }
+        foreach (Connection connection in connections) {
+            string connectionName = connection.start + "-" + connection.end;
+            
+            // Don't test invalid connections
+            if (connection.end == connection.start || connection.start == 0 && connection.end == places.Length) {
+                Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
+                continue;
+            }
+            // Don't test connections that are part of the input files
+            if (ConnectionExistsInFileInfos(connection.start.ToString(), connection.end.ToString(), originalFileArray)) {
+                Console.WriteLine($"\nSkipping test for {connectionName}, Reason: Part of input");
+                continue;
+            }
+
+            Console.WriteLine($"\n-- Testing new connection: {connectionName} --");
+            files = DeepCopyFileInfoArray(originalFileArray);
+            EditFilesToTestNewConnection(connection.start.ToString(), connection.end.ToString());
+            Solution testSolution = TestConnection();
+            int frameDifference = bestSolution.time - testSolution.time;
+            if (frameDifference < frameDifferenceThreshold) {
+                Console.WriteLine($"Connection not useful, because it would need to be {frameDifference}f (or faster) to match (or beat) current best solution.");
+            } else {
+                usefulConnections.Add(new ConnectionResult(connectionName, ParseSolution(testSolution), frameDifference));
+                Console.WriteLine($"Best route using tested connection (assuming 0f for {connectionName}):");
+                PrintSolution(testSolution);
+                Console.WriteLine($"Connection {connectionName} needs to be {frameDifference}f (or faster) to match (or beat) current best solution.");
             }
         }
         
