@@ -1,0 +1,39 @@
+
+How to get started:
+
+1: Click the 'Lobby TAS Folder' text box and select the folder that contains all of the lobby files you want to route.
+   Note that every TAS file in the folder has to be a lobby file, and that it will find files in
+   branching directories of the given folder as well.
+
+2: Adjust the 'Restart Penalty' value if you need to. It's the same as how long it takes to gain control when you enter the lobby.
+
+3: Try clicking the 'Run Router' button. It might work already, but if it doesn't,
+   it will give you feedback in what needs to be fixed.
+
+4: You can disable 'Only Dead End Restarts' in the 'Restarts' dropdown menu to route the lobby more thoroughly.
+   This allows many many more mostly useless routes and might make very big lobbies take long to compute.
+
+
+
+Table input is the secondary way to use the pathfinding algorithm.
+It's only useful if you're already using something like a spreadsheet to keep track of lobby TASing progress.
+In a routing table, the Y axis is the start location and the X axis is the target location.
+A table looks something like this:
+
+[0,259,60000,60000,60000,60000,60000,60000,60000,60000,116,147,60000,128,4],
+[190,0,218,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,236,162],
+[190,177,0,241,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000],
+[190,60000,285,0,197,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000],
+[190,60000,60000,249,0,232,60000,60000,60000,60000,60000,60000,60000,60000,60000],
+[190,60000,60000,60000,222,0,247,60000,60000,60000,60000,60000,206,60000,60000],
+[190,60000,60000,60000,60000,345,0,233,60000,60000,94,60000,133,60000,60000],
+[190,60000,60000,60000,60000,60000,213,0,164,185,152,60000,60000,60000,60000],
+[190,60000,60000,60000,60000,60000,60000,257,0,282,336,60000,60000,60000,60000],
+[190,60000,60000,60000,60000,60000,60000,296,329,0,317,337,60000,60000,60000],
+[190,60000,60000,60000,60000,60000,196,215,262,218,0,139,193,60000,153],
+[190,60000,60000,60000,60000,60000,60000,60000,60000,199,119,0,60000,60000,167],
+[190,60000,60000,60000,60000,312,128,60000,60000,60000,169,60000,0,60000,60000],
+[190,269,60000,60000,60000,60000,60000,60000,60000,60000,181,207,60000,0,66],
+[0,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,0]
+
+Exact formatting of the table does not matter. It only looks for the separate numbers per line.

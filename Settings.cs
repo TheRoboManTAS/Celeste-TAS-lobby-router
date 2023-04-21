@@ -15,6 +15,11 @@ public class Settings
     [Setting(Input = "txt_tableInput.Text")]
     public string? TableInput;
 
+    [Setting(Input = "cbx_newConnectionsMode.Checked")]
+    public bool newConnectionsMode = false;
+    [Setting(Input = "txt_newConnectionsInput.Text")]
+    public string NewConnectionsInput = "Format: 13-18, 0-20";
+
     [Setting(Input = "num_restartPenalty.Value")]
     public int restartPenalty = 190;
     [Setting(Input = "onlyRequiredRestartsToolStripMenuItem.Checked")]

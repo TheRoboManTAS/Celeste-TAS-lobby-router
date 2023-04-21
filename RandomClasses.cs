@@ -38,3 +38,35 @@ public struct PlaceInfo
 
     public int FramesTo(int place) => times[Array.IndexOf(targets, place)];
 }
+
+public struct Solution {
+    public int[] path;
+    public int time;
+
+    public Solution(int[] _path, int _time) {
+        path = _path;
+        time = _time;
+    }
+}
+
+public struct ConnectionResult {
+    public string connectionName;
+    public string parsedSol;
+    public int timeNeeded;
+
+    public ConnectionResult(string _connectionName, string _parsedSol, int _timeNeeded) {
+        connectionName = _connectionName;
+        parsedSol = _parsedSol;
+        timeNeeded = _timeNeeded;
+    }
+}
+
+public struct Connection {
+    public int start;
+    public int end;
+
+    public Connection(int _start, int _end) {
+        start = _start;
+        end = _end;
+    }
+}
