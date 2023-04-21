@@ -11,6 +11,9 @@ public class AlgRunner
 
     public bool stillRunning = true;
 
+    string[] places;
+    int start;
+
     public void FetchFileTimes()
     {
         foreach (var file in files) {
@@ -22,10 +25,57 @@ public class AlgRunner
         }
     }
 
+    public void SetAllFileConnectionsToTime(string _start, string _end, int _time) {
+        var matchedFiles = files.Where(f => f.start == _start || f.end == _end).ToList();
+
+        for (int i = 0; i < matchedFiles.Count; i++)
+        {
+            int matchedIndex = Array.IndexOf(files, matchedFiles[i]);
+            FileInfo updatedFile = files[matchedIndex];
+            updatedFile.time = _time;
+            files[matchedIndex] = updatedFile;
+        }
+    }
+
+    public void AddNewFileConnection(string _start, string _end, int _time) {
+        if (_start == "0") {
+            files = files.Prepend(new FileInfo() {start=_start, end=_end, time=_time}).ToArray();
+        } else {
+            files = files.Append(new FileInfo() {start=_start, end=_end, time=_time}).ToArray();
+        }
+    }
+
+    public void FilterUnusedFiles() {
+        files = files.Where(f => f.time < 10000).ToArray();
+    }
+
+    public bool ConnectionExistsInFileInfos(string _start, string _end, FileInfo[] _fileInfos) {
+        var matchedFiles = _fileInfos.Where(f => f.start == _start && f.end == _end).ToList();
+        return matchedFiles.Count > 0;
+    }
+
+    public void EditFilesToTestNewConnection(string _start, string _end) {
+        SetAllFileConnectionsToTime(_start, _end, 60000);
+        FilterUnusedFiles();
+        AddNewFileConnection(_start, _end, 0);
+    }
+
+    public FileInfo[] DeepCopyFileInfoArray(FileInfo[] _fileInfos)
+    {
+        FileInfo[] copiedFiles = _fileInfos.Select(f => new FileInfo
+        {
+            start = f.start,
+            end = f.end,
+            time = f.time
+        }).ToArray();
+
+        return copiedFiles;
+    }
+
     public void SolveLobby()
     {
         // put the name of every distinct place to an array
-        string[] places = files.Select(f => f.start)
+        places = files.Select(f => f.start)
             .Concat(files.Select(f => f.end))
             .Distinct().ToArray();
         // get amount of places minus the start, for checking pathfind trail length
@@ -43,12 +93,12 @@ public class AlgRunner
             nodes[i].targeters = Enumerable.Range(0, nodes.Length)
                 .Where(j => nodes[j].targets.Contains(i)).ToArray();
 
-        int start = settings.UseTableInput ? 0 : Array.IndexOf(places, startFile);
+        start = settings.UseTableInput ? 0 : Array.IndexOf(places, startFile);
         int finish = settings.UseTableInput ? places.Length - 1 : Array.IndexOf(places, finishFile);
 
-        var solutions = new List<(int[], int)>();
+        var solutions = new List<Solution>();
         for (int i = 0; i < settings.topNSolutions; i++) {
-            solutions.Add(new(new int[] {}, 99999999));
+            solutions.Add(new Solution(new int[] {}, 99999999));
         }
 
         long iterations = 0;
@@ -113,13 +163,13 @@ public class AlgRunner
                     var truncated = trail.Take(index + 1).ToArray();
                     int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
                     consideredSolutions++;
-                    if (time < solutions[settings.topNSolutions - 1].Item2) {
+                    if (time < solutions[settings.topNSolutions - 1].time) {
                         for (int i = 0; i < settings.topNSolutions; i++) {
-                            if (time < solutions[i].Item2) { 
+                            if (time < solutions[i].time) { 
                                 if (i == 0) {
-                                    Console.WriteLine(ParseSolution(new(truncated, time)));
+                                    Console.WriteLine(ParseSolution(new Solution(truncated, time)));
                                 }
-                                solutions.Insert(i, new(truncated, time));
+                                solutions.Insert(i, new Solution(truncated, time));
                                 solutions.RemoveAt(settings.topNSolutions);
                                 break;
                             }
@@ -129,7 +179,7 @@ public class AlgRunner
                 return;
             }
 
-            if (localLowerBound >= solutions[settings.topNSolutions - 1].Item2) {
+            if (localLowerBound >= solutions[settings.topNSolutions - 1].time) {
                 cutBranches++;
                 return;
             }
@@ -207,21 +257,17 @@ public class AlgRunner
         solutions.Reverse();
         timer.Stop();
 
-        //if (!settings.DisableSorting)
-        //    solutions = solutions.OrderByDescending(s => s.Item2).ToList();
-        // normal console output
-        
         int placementPadding = solutions.Count.ToString().Length;
-        var bestRestartSolutions = new List<((int[], int), int)>();
+        var bestRestartSolutions = new List<(Solution, int)>();
         for (int i = 0; i < nodes.Length; i++) {
-            bestRestartSolutions.Add(new(new(new int[] {}, -1), -1));
+            bestRestartSolutions.Add(new(new Solution(new int[] {}, -1), -1));
         }
         if (!settings.LogResults) {
             Console.WriteLine("\n-- Fastest Routes --");
             int firstRealSolutionIndex = Math.Max(0, solutions.Count - consideredSolutions);
             for (int i = firstRealSolutionIndex; i < solutions.Count; i++) {
-                PrintSolution(solutions[i], solutions.Count - i);
-                int restarts = solutions[i].Item1.Where(x => x.Equals(0)).Count() - 1;
+                PrintSolution(solutions[i], solutions.Count - i, placementPadding);
+                int restarts = solutions[i].path.Where(x => x.Equals(0)).Count() - 1;
                 if (restarts >= 0) {
                     bestRestartSolutions[restarts] = new(solutions[i], solutions.Count - i);
                 }                
@@ -230,7 +276,7 @@ public class AlgRunner
             for (int i = 0; i < bestRestartSolutions.Count; i++) {
                 if (bestRestartSolutions[i].Item2 > 0) {
                     Console.WriteLine($"With {i} restart(s):");
-                    PrintSolution(bestRestartSolutions[i].Item1, bestRestartSolutions[i].Item2);
+                    PrintSolution(bestRestartSolutions[i].Item1, bestRestartSolutions[i].Item2, placementPadding);
                 }
             }
             Console.WriteLine("No solution with different amounts of restarts found.");
@@ -242,34 +288,14 @@ public class AlgRunner
                 string.Join('\n', solutions.Select(sol => ParseSolution(sol))));
             Console.WriteLine("\nResults logged into " + file);
         }
-        Console.WriteLine("\n-- Settings --");
-        Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
-        Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
-        Console.WriteLine("Number of Solutions: " + settings.topNSolutions);
-        Console.WriteLine("Find New Connections Mode: " + settings.newConnectionsMode);
+
+        PrintSettings();
 
         Console.WriteLine("\n-- Statistics --");
         Console.WriteLine("Routing took: " + timer.Elapsed);
         Console.WriteLine("Pathfind function calls: "+ iterations);
         Console.WriteLine("Branches cut: " + cutBranches);
         Console.WriteLine("Full solutions calculated: " + consideredSolutions);
-
-        string ParseSolution((int[] route, int f) sol) =>
-            $"{Misc.AsSeconds(sol.f)}({sol.f}): {string.Join(", ", sol.route.Skip(1).Select(p => (p == start ? "[R]" : places[p])))}";
-        
-        void PrintSolution((int[] route, int f) sol, int place) {
-            var split = ParseSolution(sol).Split(':');
-            Output.WriteCol(place.ToString().PadLeft(placementPadding) + ") ", Color.Gray);
-            Output.WriteCol(split[0] + ':', Color.LightSkyBlue);
-            var routePieces = split[1].Split("[R]");
-            for (int p = 0; p < routePieces.Count(); p++) {
-                Output.WriteCol(routePieces[p], Color.White);
-                if (p < routePieces.Count() - 1) {
-                    Output.WriteCol("[R]", Color.Orange);    
-                }                
-            }
-            Console.WriteLine();
-        }
 
         // give debug advice if no solutions
         if (solutions.Count == 0) {
@@ -298,7 +324,7 @@ public class AlgRunner
                 }
                 else if (input.Item1[0] == 'd') {
                     int.TryParse(input.Item2, out int Index);
-                    int[] trl = solutions[^(Index + 1)].Item1;
+                    int[] trl = solutions[^(Index + 1)].path;
 
                     Output.SetColor(Color.Khaki);
 
@@ -329,6 +355,279 @@ public class AlgRunner
                 PrintDrafter();
             }
         }
+        return;
+    }
+
+    public void PrintSettings() {
+        Console.WriteLine("\n-- Settings --");
+        Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
+        Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
+        Console.WriteLine("Number of Solutions: " + settings.topNSolutions);
+        Console.WriteLine("Find New Connections Mode: " + settings.newConnectionsMode);
+    }
+
+    public Solution TestConnection()
+    {
+        // put the name of every distinct place to an array
+        places = files.Select(f => f.start)
+            .Concat(files.Select(f => f.end))
+            .Distinct().ToArray();
+        // get amount of places minus the start, for checking pathfind trail length
+        int placeCount = places.Length - 1;
+
+        // parse `files` into a more efficient pathfinding data structure. check PlaceInfo struct.
+        PlaceInfo[] nodes = places.Select<string, PlaceInfo>(p => new() {
+            name = p,
+            targets = files.Where(i => i.start == p).Select(i =>
+                    Array.IndexOf(places, i.end)).ToArray(),
+            times = files.Where(i => i.start == p).Select(i =>
+                    files.First(f => f.start == p && f.end == i.end).time).ToArray()
+        }).ToArray();
+        for (int i = 0; i < nodes.Length; i++)
+            nodes[i].targeters = Enumerable.Range(0, nodes.Length)
+                .Where(j => nodes[j].targets.Contains(i)).ToArray();
+
+        start = settings.UseTableInput ? 0 : Array.IndexOf(places, startFile);
+        int finish = settings.UseTableInput ? places.Length - 1 : Array.IndexOf(places, finishFile);
+
+        var solutions = new List<Solution>();
+        solutions.Add(new Solution(new int[] {}, 99999999));
+
+        long iterations = 0;
+        int consideredSolutions = 0;
+        int cutBranches = 0;
+        int restartCount = 0;
+        bool infRestarts = settings.maxRestarts < 0;
+
+        var trail = new int[places.Length + nodes[start].targets.Length];
+        var canGo = Enumerable.Repeat(true, places.Length).ToArray();
+        int index = 0;
+        int visitCount = 0;
+
+        Func<int, bool, bool> canRestart;
+        if (infRestarts) {
+            canRestart = settings.RequiredRestarts
+                ? (pos, must) => (pos != start) & must
+                : (pos, must) => pos != start;
+        }
+        else {
+            canRestart = settings.RequiredRestarts
+                ? (pos, must) => (pos != start) & (restartCount < settings.maxRestarts) & must
+                : (pos, must) => (pos != start) & (restartCount < settings.maxRestarts);
+        }
+
+        var lowestTimes = new List<int>();
+        for (int n = 0; n < nodes.Count(); n++) {
+            lowestTimes.Add(99999999);
+        }
+
+        // Determine lowest incoming time for each node
+        lowestTimes[0] = 0;
+        for (int n = 0; n < nodes.Count(); n++) {
+            for (int t = 0; t < nodes[n].targets.Count(); t++) {
+                if (lowestTimes[nodes[n].targets[t]] > nodes[n].times[t]) {
+                    lowestTimes[nodes[n].targets[t]] = nodes[n].times[t];
+                }
+            }
+        }
+
+        int globalLowerBound = 0;
+
+        for (int i = 0; i < lowestTimes.Count; i++) {
+            globalLowerBound += lowestTimes[i];
+        }
+
+        int localLowerBound = globalLowerBound;
+
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        
+        PathFind(start);
+        void PathFind(int pos)
+        {
+            trail[index] = pos;
+
+            iterations++;
+
+            // if finished, process the solution
+            if (pos == finish) {
+                if (visitCount == placeCount) {
+                    var truncated = trail.Take(index + 1).ToArray();
+                    int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
+                    consideredSolutions++;
+                    if (time < solutions[0].time) {
+                        solutions.Insert(0, new Solution(truncated, time));
+                        solutions.RemoveAt(1);
+                    }
+                }
+                return;
+            }
+
+            if (localLowerBound >= solutions[0].time) {
+                cutBranches++;
+                return;
+            }
+
+            int addedTime = index != 0 ? trail[index] == start ? restartPenalty : nodes[trail[index - 1]].FramesTo(trail[index]) : 0;
+            int updateLowerBound = addedTime - lowestTimes[pos];
+
+            var targets = nodes[pos].targets;
+
+            bool hasDeadEnd = false;
+            int deadEnd = 0;
+            for (int i = 0; i < targets.Length; i++) {
+                int target = targets[i];
+                if (canGo[target]) {
+                    var node = nodes[target];
+                    for (int j = 0; j < node.targeters.Length; j++)
+                        if (canGo[node.targeters[j]])
+                            goto EndChecking;
+                    if (hasDeadEnd)
+                        return;
+                    hasDeadEnd = true;
+                    deadEnd = target;
+                }
+                EndChecking: { }
+            }
+
+            if (hasDeadEnd) {
+                visitCount++;
+                index++;
+                canGo[deadEnd] = false;
+                localLowerBound += updateLowerBound;
+
+                PathFind(deadEnd);
+
+                visitCount--;
+                index--;
+                canGo[deadEnd] = true;
+                localLowerBound -= updateLowerBound;
+                return;
+            }
+
+            // branch out to all current position connections that havent been visited
+            bool mustRestart = true;
+            for (int i = 0; i < targets.Length; i++) {
+                int target = targets[i];
+                if (canGo[target]) {
+                    visitCount++;
+                    index++;
+                    canGo[target] = false;
+                    localLowerBound += updateLowerBound;
+
+                    PathFind(targets[i]);
+
+                    visitCount--;
+                    index--;
+                    canGo[target] = true;
+                    localLowerBound -= updateLowerBound;
+
+                    mustRestart = false;
+                }
+            }
+
+            // restarts
+            if (canRestart(pos, mustRestart)) {
+                index++;
+                restartCount++;
+                localLowerBound += updateLowerBound;
+                PathFind(start);
+                localLowerBound -= updateLowerBound;
+                restartCount--;
+                index--;
+            }
+        }
+
+        timer.Stop();
+
+        // give debug advice if no solutions
+        if (solutions.Count == 0) {
+            Output.WriteCol("You got zero solutions. Try running ", Color.Yellow);
+            Output.WriteCol("List file times ", Color.LightPink);
+            Output.WriteCol("to see if file names were parsed correctly.\n", Color.Yellow);
+            Output.SetColor(Color.White);
+        }
+
+        return solutions[0];
+    }
+
+    public void FindNewConnections() {
+        FileInfo[] originalFileArray = DeepCopyFileInfoArray(files);
+        Output.SetColor(Color.White);
+        Console.WriteLine("-- Find New Connections Mode --");
+        Console.WriteLine("Solving lobby to get reference solution...");
+        Solution bestSolution = TestConnection();
+
+        Console.WriteLine("\nReference Solution: ");
+        PrintSolution(bestSolution);
+
+        var usefulConnections = new List<ConnectionResult>();
+        int frameDifferenceThreshold = 0;
+        for (int testStart = 0; testStart < places.Length - 1; testStart++) {
+            for (int testEnd = 1; testEnd < places.Length; testEnd++) {
+                string connectionName = testStart + "-" + testEnd;
+                
+                // Don't test invalid connections
+                if (testEnd == testStart || testStart == 0 && testEnd == places.Length) {
+                    Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
+                    continue;
+                }
+                // Don't test connections that are part of the input files
+                if (ConnectionExistsInFileInfos(testStart.ToString(), testEnd.ToString(), originalFileArray)) {
+                    Console.WriteLine($"\nSkipping test for {connectionName}, Reason: Part of input");
+                    continue;
+                }
+
+                Console.WriteLine($"\n-- Testing new connection: {connectionName} --");
+                files = DeepCopyFileInfoArray(originalFileArray);
+                EditFilesToTestNewConnection(testStart.ToString(), testEnd.ToString());
+                Solution testSolution = TestConnection();
+                int frameDifference = bestSolution.time - testSolution.time;
+                if (frameDifference < frameDifferenceThreshold) {
+                    Console.WriteLine($"Connection not useful, because it would need to be {frameDifference}f (or faster) to match (or beat) current best solution.");
+                } else {
+                    usefulConnections.Add(new ConnectionResult(connectionName, ParseSolution(testSolution), frameDifference));
+                    Console.WriteLine($"Best route using tested connection (assuming 0f for {connectionName}):");
+                    PrintSolution(testSolution);
+                    Console.WriteLine($"Connection {connectionName} needs to be {frameDifference}f (or faster) to match (or beat) current best solution.");
+                }
+            }
+        }
+        
+        Console.WriteLine("\n-- Overview of all potentially useful new connections --\n");
+
+        foreach (ConnectionResult connectionResult in usefulConnections) {
+            var split = connectionResult.parsedSol.Split(':');
+            Output.WriteCol($"{connectionResult.connectionName})".PadLeft(6), Color.Gray);
+            Output.WriteCol($"[{connectionResult.timeNeeded}f]:".PadLeft(8), Color.LightSkyBlue);
+            var routePieces = split[1].Split("[R]");
+            for (int p = 0; p < routePieces.Count(); p++) {
+                Output.WriteCol(routePieces[p], Color.White);
+                if (p < routePieces.Count() - 1) {
+                    Output.WriteCol("[R]", Color.Orange);    
+                }                
+            }
+            Console.WriteLine();
+        }
+
+        PrintSettings();
+    }
+
+    string ParseSolution(Solution sol) =>
+            $"{Misc.AsSeconds(sol.time)}({sol.time}): {string.Join(", ", sol.path.Skip(1).Select(p => (p == start ? "[R]" : places[p])))}";
+        
+    void PrintSolution(Solution sol, int placement=0, int placementPadding=1) {
+        var split = ParseSolution(sol).Split(':');
+        if (placement != 0)
+            Output.WriteCol(placement.ToString().PadLeft(placementPadding) + ") ", Color.Gray);
+        Output.WriteCol(split[0] + ':', Color.LightSkyBlue);
+        var routePieces = split[1].Split("[R]");
+        for (int p = 0; p < routePieces.Count(); p++) {
+            Output.WriteCol(routePieces[p], Color.White);
+            if (p < routePieces.Count() - 1) {
+                Output.WriteCol("[R]", Color.Orange);    
+            }                
+        }
+        Console.WriteLine();
     }
 
     private void PrintDrafter(bool separatorLine = true)

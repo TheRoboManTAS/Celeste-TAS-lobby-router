@@ -160,7 +160,7 @@ public partial class MainForm : Form
                     end = (j + 1).ToString(),
                     time = time
                 })
-            ).SelectMany(arr => arr.Where(f => f.time < 2500 && f.start != f.end)).ToArray();
+            ).SelectMany(arr => arr.Where(f => f.time < 10000 && f.start != f.end)).ToArray();
 
             return true;
         }
@@ -289,7 +289,11 @@ public partial class MainForm : Form
                 oldRunner.stillRunning = false;
             oldRunner = new AlgRunner(this);
             Console.WriteLine("Loading...");
-            new Thread(oldRunner.SolveLobby).Start();
+            if (settings.newConnectionsMode) {
+                new Thread(oldRunner.FindNewConnections).Start();
+            } else {
+                new Thread(oldRunner.SolveLobby).Start();
+            }
         }
     }
 
