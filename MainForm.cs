@@ -312,6 +312,7 @@ public partial class MainForm : Form
 
     private void onlyRequiredRestartsToolStripMenuItem_Click(object sender, EventArgs e) => onlyRequiredRestartsToolStripMenuItem.Checked ^= true;
     //private void distinctResultEndTimesToolStripMenuItem_Click(object sender, EventArgs e) => distinctResultEndTimesToolStripMenuItem.Checked ^= true;
+    private void findNewConnectionsModeMenuItem_Click(object sender, EventArgs e) => findNewConnectionsModeMenuItem.Checked ^= true;
     private void logResultsToTextFilesToolStripMenuItem_Click(object sender, EventArgs e) => logResultsToTextFilesToolStripMenuItem.Checked ^= true;
     //private void disableResultSortingToolStripMenuItem_Click(object sender, EventArgs e) => disableResultSortingToolStripMenuItem.Checked ^= true;
 

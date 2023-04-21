@@ -23,6 +23,8 @@ public class Settings
     public int maxRestarts = -1;
     [Setting(Input = "topNSolutions.Value")]
     public int topNSolutions = 100;
+    [Setting(Input = "findNewConnectionsModeMenuItem.Checked")]
+    public bool newConnectionsMode = false;
 
     // [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
     // public bool DistinctTimings = true;

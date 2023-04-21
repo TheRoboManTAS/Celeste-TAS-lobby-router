@@ -246,6 +246,7 @@ public class AlgRunner
         Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
         Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
         Console.WriteLine("Number of Solutions: " + settings.topNSolutions);
+        Console.WriteLine("Find New Connections Mode: " + settings.newConnectionsMode);
 
         Console.WriteLine("\n-- Statistics --");
         Console.WriteLine("Routing took: " + timer.Elapsed);
