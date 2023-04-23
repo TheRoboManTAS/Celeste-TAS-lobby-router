@@ -28,8 +28,13 @@ public class AlgRunner
     }
 
     public void SetAllFileConnectionsToTime(string _start, string _end, int _time) {
-        var matchedFiles = files.Where(f => f.start == _start || f.end == _end).ToList();
-
+        List<FileInfo> matchedFiles;
+        if (_start == "0") {
+            matchedFiles = files.Where(f => f.end == _end).ToList();
+        } else {
+            matchedFiles = files.Where(f => f.start == _start || f.end == _end).ToList();
+        }
+        
         for (int i = 0; i < matchedFiles.Count; i++)
         {
             int matchedIndex = Array.IndexOf(files, matchedFiles[i]);
@@ -541,14 +546,6 @@ public class AlgRunner
 
         timer.Stop();
 
-        // give debug advice if no solutions
-        if (solutions.Count == 0) {
-            Output.WriteCol("You got zero solutions. Try running ", Color.Yellow);
-            Output.WriteCol("List file times ", Color.LightPink);
-            Output.WriteCol("to see if file names were parsed correctly.\n", Color.Yellow);
-            Output.SetColor(Color.White);
-        }
-
         return solutions[0];
     }
 
@@ -642,6 +639,10 @@ public class AlgRunner
             files = DeepCopyFileInfoArray(originalFileArray);
             EditFilesToTestNewConnection(connection.start.ToString(), connection.end.ToString());
             Solution testSolution = TestConnection();
+            if (testSolution.path.Length == 0) {
+                Console.WriteLine($"Connection not useful, because no route was found containing the connection.");
+                continue;
+            }
             int frameDifference = bestSolution.time - testSolution.time;
             if (frameDifference < frameDifferenceThreshold) {
                 Console.WriteLine($"Connection not useful, because it would need to be {frameDifference}f (or faster) to match (or beat) current best solution.");
