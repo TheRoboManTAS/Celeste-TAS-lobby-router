@@ -137,7 +137,7 @@ public class AlgRunner
         }
 
         // Determine lowest incoming time for each node
-        lowestTimes[0] = 0;
+        lowestTimes[start] = 0;
         for (int n = 0; n < nodes.Count(); n++) {
             for (int t = 0; t < nodes[n].targets.Count(); t++) {
                 if (lowestTimes[nodes[n].targets[t]] > nodes[n].times[t]) {
@@ -429,7 +429,7 @@ public class AlgRunner
         }
 
         // Determine lowest incoming time for each node
-        lowestTimes[0] = 0;
+        lowestTimes[start] = 0;
         for (int n = 0; n < nodes.Count(); n++) {
             for (int t = 0; t < nodes[n].targets.Count(); t++) {
                 if (lowestTimes[nodes[n].targets[t]] > nodes[n].times[t]) {
