@@ -27,8 +27,6 @@ public class Settings
     [Setting(Input = "topNSolutions.Value")]
     public int topNSolutions = 100;
 
-    [Setting(Input = "multithreadingToolStripMenuItem.Checked")]
-    public bool Multithreading = false;
     [Setting(Input = "threadCount.Value")]
     public int ThreadCount = DefaultThreadCount(Environment.ProcessorCount);
 
@@ -37,12 +35,8 @@ public class Settings
         logicalCores >= 4 ? logicalCores * 3 / 4 :
         Math.Max(1, logicalCores);
 
-    // [Setting(Input = "distinctResultEndTimesToolStripMenuItem.Checked")]
-    // public bool DistinctTimings = true;
     [Setting(Input = "logResultsToTextFilesToolStripMenuItem.Checked")]
     public bool LogResults = false;
-    //[Setting(Input = "disableResultSortingToolStripMenuItem.Checked")]
-    //public bool DisableSorting = false;
 
     public bool KnowsHelpTxt = false;
 }

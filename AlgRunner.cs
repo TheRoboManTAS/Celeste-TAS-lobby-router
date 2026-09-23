@@ -221,13 +221,7 @@ public class AlgRunner
 
         var placeInfos = new PlaceInfo[places.Length];
         for (int i = 0; i < places.Length; i++)
-            placeInfos[i] = new PlaceInfo { name = places[i], targets = targets[i].ToArray(), times = times[i].ToArray() };
-        var targeters = places.Select(_ => new List<int>()).ToArray();
-        for (int j = 0; j < places.Length; j++)
-            foreach (int t in placeInfos[j].targets.Distinct())
-                targeters[t].Add(j);
-        for (int i = 0; i < places.Length; i++)
-            placeInfos[i].targeters = targeters[i].ToArray();
+            placeInfos[i] = new PlaceInfo { targets = targets[i].ToArray(), times = times[i].ToArray() };
         nodes = placeInfos;
 
         start = settings.UseTableInput ? 0 : Array.IndexOf(places, startFile);
@@ -239,9 +233,6 @@ public class AlgRunner
         }
         return new Solver(nodes, start, finish, restartPenalty);
     }
-
-    public Solution TestConnection() =>
-        CreateSolver(out _)?.Solve(1)[0] ?? new Solution(new int[] {}, Solver.NoSolutionTime);
 
     // after both nodes of the test connection have been visited, results from previous runs are shared
     Solution TestConnection(string _start, string _end, SharedBoundTable sharedBounds, Dictionary<string, int> lobbyIds)
@@ -390,7 +381,7 @@ public class AlgRunner
             }
 
             // Don't test invalid connections
-            if (connection.end == connection.start || connection.start == 0 && connection.end == places.Length) {
+            if (connection.end == connection.start) {
                 if (printProgress)
                     Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
                 continue;
@@ -485,7 +476,7 @@ public class AlgRunner
         startFile = src.startFile;
         finishFile = src.finishFile;
         restartPenalty = settings.UseTableInput ? src.tableRestartPenalty : settings.restartPenalty;
-        threads = settings.Multithreading ? Math.Max(1, settings.ThreadCount) : 1;
+        threads = Math.Max(1, settings.ThreadCount);
     }
 
     AlgRunner(FileInfo[] files, Settings settings, string startFile, string finishFile, int restartPenalty, int _)

@@ -29,14 +29,8 @@ public struct FileInfo
 
 public struct PlaceInfo
 {
-    public string name;
-
     public int[] targets;
-    public int[] targeters;
-
     public int[] times;
-
-    public int FramesTo(int place) => times[Array.IndexOf(targets, place)];
 }
 
 public struct Solution {

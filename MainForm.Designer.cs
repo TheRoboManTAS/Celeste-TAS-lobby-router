@@ -37,12 +37,9 @@ namespace RoboRouter
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outputToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            //this.distinctResultEndTimesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logResultsToTextFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            //this.disableResultSortingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.topNSolutionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.multithreadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.threadCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lbl_startName = new System.Windows.Forms.Label();
             this.lbl_finishName = new System.Windows.Forms.Label();
@@ -122,20 +119,10 @@ namespace RoboRouter
             // outputToolStripMenuItem
             // 
             this.outputToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            //this.distinctResultEndTimesToolStripMenuItem,
-            this.logResultsToTextFilesToolStripMenuItem,
-            //this.disableResultSortingToolStripMenuItem
-            });
+            this.logResultsToTextFilesToolStripMenuItem});
             this.outputToolStripMenuItem.Name = "outputToolStripMenuItem";
             this.outputToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
             this.outputToolStripMenuItem.Text = "Output";
-            // 
-            // distinctResultEndTimesToolStripMenuItem
-            // 
-            //this.distinctResultEndTimesToolStripMenuItem.Name = "distinctResultEndTimesToolStripMenuItem";
-            //this.distinctResultEndTimesToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            //this.distinctResultEndTimesToolStripMenuItem.Text = "Distinct Result End Times";
-            //this.distinctResultEndTimesToolStripMenuItem.Click += new System.EventHandler(this.distinctResultEndTimesToolStripMenuItem_Click);
             // 
             // logResultsToTextFilesToolStripMenuItem
             // 
@@ -144,18 +131,10 @@ namespace RoboRouter
             this.logResultsToTextFilesToolStripMenuItem.Text = "Log Results To Text Files";
             this.logResultsToTextFilesToolStripMenuItem.Click += new System.EventHandler(this.logResultsToTextFilesToolStripMenuItem_Click);
             // 
-            // disableResultSortingToolStripMenuItem
-            // 
-            //this.disableResultSortingToolStripMenuItem.Name = "disableResultSortingToolStripMenuItem";
-            //this.disableResultSortingToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            //this.disableResultSortingToolStripMenuItem.Text = "Disable Result Sorting";
-            //this.disableResultSortingToolStripMenuItem.Click += new System.EventHandler(this.disableResultSortingToolStripMenuItem_Click);
-            // 
             // restartsToolStripMenuItem
             // 
             this.restartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.topNSolutionsToolStripMenuItem,
-            this.multithreadingToolStripMenuItem,
             this.threadCountToolStripMenuItem
             });
             this.restartsToolStripMenuItem.Name = "restartsToolStripMenuItem";
@@ -167,15 +146,9 @@ namespace RoboRouter
             this.topNSolutionsToolStripMenuItem.Name = "topNSolutionsToolStripMenuItem";
             this.topNSolutionsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.topNSolutionsToolStripMenuItem.Text = "Number of Solutions";
-            this.multithreadingToolStripMenuItem.Name = "multithreadingToolStripMenuItem";
-            this.multithreadingToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.multithreadingToolStripMenuItem.Text = "Multithreaded Connection Tests";
-            this.multithreadingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.multithreadingToolStripMenuItem_CheckedChanged);
-            this.multithreadingToolStripMenuItem.Click += new System.EventHandler(this.multithreadingToolStripMenuItem_Click);
             this.threadCountToolStripMenuItem.Name = "threadCountToolStripMenuItem";
             this.threadCountToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.threadCountToolStripMenuItem.Text = "Thread Count";
-            this.threadCountToolStripMenuItem.Enabled = false;
             // 
             // lbl_startName
             // 
@@ -390,13 +363,10 @@ namespace RoboRouter
         private System.Windows.Forms.Label lbl_nameSeparators;
         private System.Windows.Forms.TextBox txt_nameSeparators;
         private System.Windows.Forms.Button btn_refresh;
-        //private System.Windows.Forms.ToolStripMenuItem distinctResultEndTimesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logResultsToTextFilesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem topNSolutionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem multithreadingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem threadCountToolStripMenuItem;
         private System.Windows.Forms.NumericUpDown num_restartPenalty;
         private System.Windows.Forms.Label lbl_restartPenalty;
-        //private System.Windows.Forms.ToolStripMenuItem disableResultSortingToolStripMenuItem;
     }
 }

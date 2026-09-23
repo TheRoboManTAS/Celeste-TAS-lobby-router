@@ -350,11 +350,7 @@ public partial class MainForm : Form
         UpdateStartAndEnd(true);
     }
 
-    private void multithreadingToolStripMenuItem_Click(object sender, EventArgs e) => multithreadingToolStripMenuItem.Checked ^= true;
-    private void multithreadingToolStripMenuItem_CheckedChanged(object sender, EventArgs e) => threadCountToolStripMenuItem.Enabled = multithreadingToolStripMenuItem.Checked;
-    //private void distinctResultEndTimesToolStripMenuItem_Click(object sender, EventArgs e) => distinctResultEndTimesToolStripMenuItem.Checked ^= true;
     private void logResultsToTextFilesToolStripMenuItem_Click(object sender, EventArgs e) => logResultsToTextFilesToolStripMenuItem.Checked ^= true;
-    //private void disableResultSortingToolStripMenuItem_Click(object sender, EventArgs e) => disableResultSortingToolStripMenuItem.Checked ^= true;
 
     private void cbx_useTableInput_CheckedChanged(object sender, EventArgs e) => UpdateAccess();
     private void cbx_newConnectionsMode_CheckedChanged(object sender, EventArgs e) => UpdateAccess();
