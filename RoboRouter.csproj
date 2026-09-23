@@ -10,4 +10,10 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Benchmark\**" />
+    <EmbeddedResource Remove="Benchmark\**" />
+    <None Remove="Benchmark\**" />
+  </ItemGroup>
+
 </Project>

@@ -14,14 +14,14 @@ public class SettingsManager
 
     private object settings;
     private MemberInfo[] fields;
-    private (object container, MemberInfo? member)[] targets;
+    private (object container, MemberInfo member)[] targets;
 
     public SettingsManager(object container, object target)
     {
         settings = container;
 
         var settLs = new List<MemberInfo>();
-        var targetLs = new List<(object, MemberInfo?)>();
+        var targetLs = new List<(object, MemberInfo)>();
 
         foreach (var field in container.GetType().GetFields().Concat<MemberInfo>(container.GetType().GetProperties())) {
             var attr = field.GetCustomAttribute<Setting>();
@@ -32,8 +32,11 @@ public class SettingsManager
                 foreach (var step in chain[..^1])
                     fieldCont = fieldCont?.GetMember(step);
 
+                var member = fieldCont?.GetMemberInfo(chain[^1]);
+                if (fieldCont == null || member == null)
+                    throw new InvalidOperationException($"Setting input \"{attr.Input}\" doesn't exist");
                 settLs.Add(field);
-                targetLs.Add((fieldCont, fieldCont.GetMemberInfo(chain[^1])));
+                targetLs.Add((fieldCont, member));
             }
         }
 
@@ -55,7 +58,7 @@ public class SettingsManager
     public void Save()
     {
         for (int i = 0; i < fields.Length; i++) {
-            var inputVal = targets[i].member?.GetValue(targets[i].container);
+            var inputVal = targets[i].member.GetValue(targets[i].container);
             var setting = fields[i];
             if (inputVal is decimal)
                 inputVal = Convert.ChangeType(inputVal, setting.VariableType());
@@ -85,8 +88,8 @@ public static class MemberInfoExtension
 
     public static object? GetMember(this object obj, string name) => obj.GetMemberInfo(name)?.GetValue(obj);
 
-    public static Type? VariableType(this MemberInfo info) => info switch {
+    public static Type VariableType(this MemberInfo info) => info switch {
             FieldInfo fi => fi.FieldType.UnderlyingSystemType,
             PropertyInfo pi => pi.PropertyType.UnderlyingSystemType,
-            _ => null };
+            _ => throw new ArgumentException($"{info.Name} is not a valid field or property") };
 }

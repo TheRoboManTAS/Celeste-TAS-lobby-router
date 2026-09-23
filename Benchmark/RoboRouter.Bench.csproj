@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Optimize>true</Optimize>
+    <RootNamespace>RoboRouter.Bench</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Drawing" />
+    <Compile Include="..\AlgRunner.cs" Link="App\AlgRunner.cs" />
+    <Compile Include="..\RandomClasses.cs" Link="App\RandomClasses.cs" />
+    <Compile Include="..\Output.cs" Link="App\Output.cs" />
+    <Compile Include="..\Settings.cs" Link="App\Settings.cs" />
+    <Compile Include="..\SettingsManager.cs" Link="App\SettingsManager.cs" />
+    <Compile Include="..\TableParser.cs" Link="App\TableParser.cs" />
+    <Compile Include="..\Solver.cs" Link="App\Solver.cs" />
+  </ItemGroup>
+
+</Project>

@@ -6,8 +6,8 @@ public class AlgRunner
     public Settings settings;
     public FileInfo[] files;
 
-    public string startFile;
-    public string finishFile;
+    public string? startFile;
+    public string? finishFile;
 
     public int restartPenalty;
 
@@ -145,8 +145,8 @@ public class AlgRunner
 
             while (true) {
                 Output.inputRow = Console.CursorTop;
-                string raw = Console.ReadLine();
-                if (!stillRunning)
+                string? raw = Console.ReadLine();
+                if (!stillRunning || raw == null)
                     return;
                 var input = Misc.ParseInput(raw.ToLower());
 
@@ -469,17 +469,17 @@ public class AlgRunner
         Output.WriteCol(">>> ", Color.White);
     }
 
-    public AlgRunner(MainForm src)
+    public AlgRunner(FileInfo[] files, Settings settings, string? startFile, string? finishFile, int tableRestartPenalty)
     {
-        files = src.files;
-        settings = src.settings;
-        startFile = src.startFile;
-        finishFile = src.finishFile;
-        restartPenalty = settings.UseTableInput ? src.tableRestartPenalty : settings.restartPenalty;
+        this.files = files;
+        this.settings = settings;
+        this.startFile = startFile;
+        this.finishFile = finishFile;
+        restartPenalty = settings.UseTableInput ? tableRestartPenalty : settings.restartPenalty;
         threads = Math.Max(1, settings.ThreadCount);
     }
 
-    AlgRunner(FileInfo[] files, Settings settings, string startFile, string finishFile, int restartPenalty, int _)
+    AlgRunner(FileInfo[] files, Settings settings, string? startFile, string? finishFile, int restartPenalty, int _)
     {
         this.files = files;
         this.settings = settings;

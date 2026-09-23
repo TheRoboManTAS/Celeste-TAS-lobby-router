@@ -32,6 +32,7 @@ public sealed class Solver
     public long Iterations;
     public long CutBranches;
     public int ConsideredSolutions;
+    public static long TotalIterations;
     SharedBoundTable? shared;
     ulong shareMask;
     int shareForbidden = -1;
@@ -144,6 +145,7 @@ public sealed class Solver
             SearchRisingCutoff();
         else
             Search(start, 0);
+        Interlocked.Add(ref TotalIterations, Iterations);
         return solutions;
     }
 

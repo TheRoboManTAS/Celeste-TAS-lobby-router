@@ -5,3 +5,8 @@
 settings.xml
 /Release
 /Results
+/Benchmark/bin
+/Benchmark/obj
+/Benchmark/out
+/Benchmark/reference
+/Benchmark/generated

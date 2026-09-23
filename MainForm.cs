@@ -2,6 +2,7 @@
 using System.Xml.Serialization;
 using static System.Drawing.Color;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RoboRouter;
 
@@ -11,8 +12,8 @@ public partial class MainForm : Form
 
     public FileInfo[] files;
 
-    public string startFile;
-    public string finishFile;
+    public string? startFile;
+    public string? finishFile;
     public PlaceState start;
     public PlaceState finish;
 
@@ -151,23 +152,7 @@ public partial class MainForm : Form
     private bool ParseTable()
     {
         try {
-            Regex getNum = new(@"\d+");
-            // skip first row because input table always starts with '\n' so first elt will be empty
-            // skip last row because we dont account for going from finish to elsewhere
-            var intGrid = Regex.Matches(settings.TableInput, @".*\d.*").SkipLast(1)
-            .Select(ln => getNum.Matches(ln.Value)
-                .Select(m => int.Parse(m.Value)).ToArray()).ToArray();
-
-            tableRestartPenalty = intGrid[1][0];
-
-            files = intGrid.Select((arr, i) =>
-                arr.Skip(1).Select((time, j) => new FileInfo() {
-                    start = i.ToString(),
-                    end = (j + 1).ToString(),
-                    time = time
-                })
-            ).SelectMany(arr => arr.Where(f => f.time < 10000 && f.start != f.end)).ToArray();
-
+            files = TableParser.Parse(settings.TableInput, out tableRestartPenalty);
             return true;
         }
         catch {
@@ -261,6 +246,7 @@ public partial class MainForm : Form
 
     SettingsManager manager;
 
+    [MemberNotNull(nameof(settings), nameof(manager))]
     public void LoadSettings()
     {
         settings = new Settings();
@@ -323,7 +309,7 @@ public partial class MainForm : Form
         if (ready) {
             if (oldRunner != null)
                 oldRunner.stillRunning = false;
-            oldRunner = new AlgRunner(this);
+            oldRunner = CreateRunner();
             Console.WriteLine("Loading...");
             if (settings.newConnectionsMode) {
                 new Thread(oldRunner.FindNewConnections).Start();
@@ -333,12 +319,14 @@ public partial class MainForm : Form
         }
     }
 
+    private AlgRunner CreateRunner() => new(files, settings, startFile, finishFile, tableRestartPenalty);
+
     private void btn_fetchTimes_Click(object sender, EventArgs e)
     {
         SaveSettings();
         Output.ClearAndShow(true);
         if (ParseFiles(true))
-            new AlgRunner(this).FetchFileTimes();
+            CreateRunner().FetchFileTimes();
     }
 
     private void btn_refresh_Click(object sender, EventArgs e)
@@ -378,9 +366,6 @@ How to get started:
 
 3: Try clicking the 'Run Router' button. It might work already, but if it doesn't,
    it will give you feedback in what needs to be fixed.
-
-4: You can disable 'Only Dead End Restarts' in the 'Restarts' dropdown menu to route the lobby more thoroughly.
-   This allows many many more mostly useless routes and might make very big lobbies take long to compute.
 
 
 
