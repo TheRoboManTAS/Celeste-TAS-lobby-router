@@ -254,6 +254,7 @@ public partial class MainForm : Form
 
         txt_tableInput.Enabled = cbx_useTableInput.Checked;
         txt_newConnectionsInput.Enabled = cbx_newConnectionsMode.Checked;
+        cbx_printDetailedProgress.Enabled = cbx_newConnectionsMode.Checked;
     }
 
     NumMenuItem maxRestarts;

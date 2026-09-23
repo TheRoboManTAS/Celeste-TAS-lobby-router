@@ -19,6 +19,8 @@ public class Settings
     public bool newConnectionsMode = false;
     [Setting(Input = "txt_newConnectionsInput.Text")]
     public string NewConnectionsInput = "Format: 13-18, 0-20";
+    [Setting(Input = "cbx_printDetailedProgress.Checked")]
+    public bool PrintDetailedProgress = false;
 
     [Setting(Input = "num_restartPenalty.Value")]
     public int restartPenalty = 190;

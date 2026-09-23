@@ -54,6 +54,7 @@ namespace RoboRouter
             this.txt_tableInput = new System.Windows.Forms.RichTextBox();
             this.lbl_tableInput = new System.Windows.Forms.Label();
             this.cbx_newConnectionsMode = new System.Windows.Forms.CheckBox();
+            this.cbx_printDetailedProgress = new System.Windows.Forms.CheckBox();
             this.txt_newConnectionsInput = new System.Windows.Forms.TextBox();
             this.lbl_newConnectionsInput = new System.Windows.Forms.Label();
             this.lbl_nameSeparators = new System.Windows.Forms.Label();
@@ -266,6 +267,16 @@ namespace RoboRouter
             this.cbx_newConnectionsMode.UseVisualStyleBackColor = true;
             this.cbx_newConnectionsMode.CheckedChanged += new System.EventHandler(this.cbx_newConnectionsMode_CheckedChanged);
             // 
+            // cbx_printDetailedProgress
+            // 
+            this.cbx_printDetailedProgress.AutoSize = true;
+            this.cbx_printDetailedProgress.Location = new System.Drawing.Point(555, 35);
+            this.cbx_printDetailedProgress.Name = "cbx_printDetailedProgress";
+            this.cbx_printDetailedProgress.Size = new System.Drawing.Size(106, 19);
+            this.cbx_printDetailedProgress.TabIndex = 22;
+            this.cbx_printDetailedProgress.Text = "Print Detailed Progress";
+            this.cbx_printDetailedProgress.UseVisualStyleBackColor = true;
+            // 
             // txt_newConnectionsInput
             // 
             this.txt_newConnectionsInput.Location = new System.Drawing.Point(465, 62);
@@ -349,6 +360,7 @@ namespace RoboRouter
             this.Controls.Add(this.lbl_newConnectionsInput);
             this.Controls.Add(this.txt_newConnectionsInput);
             this.Controls.Add(this.cbx_newConnectionsMode);
+            this.Controls.Add(this.cbx_printDetailedProgress);
             this.Controls.Add(this.txt_finishName);
             this.Controls.Add(this.txt_startName);
             this.Controls.Add(this.lbl_finishName);
@@ -389,6 +401,7 @@ namespace RoboRouter
         private System.Windows.Forms.RichTextBox txt_tableInput;
         private System.Windows.Forms.Label lbl_tableInput;
         private System.Windows.Forms.CheckBox cbx_newConnectionsMode;
+        private System.Windows.Forms.CheckBox cbx_printDetailedProgress;
         private System.Windows.Forms.TextBox txt_newConnectionsInput;
         private System.Windows.Forms.Label lbl_newConnectionsInput;
         private System.Windows.Forms.Label lbl_nameSeparators;

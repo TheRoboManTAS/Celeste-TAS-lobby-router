@@ -374,6 +374,7 @@ public class AlgRunner
         var workers = Enumerable.Range(0, Math.Max(1, threads))
             .Select(_ => Task.Factory.StartNew(TestWorker, TaskCreationOptions.LongRunning)).ToArray();
 
+        bool printProgress = settings.PrintDetailedProgress;
         for (int i = 0; i < connections.Count; i++) {
             var connection = connections[i];
             string connectionName = connection.start + "-" + connection.end;
@@ -392,31 +393,38 @@ public class AlgRunner
 
             // Don't test invalid connections
             if (connection.end == connection.start || connection.start == 0 && connection.end == places.Length) {
-                Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
+                if (printProgress)
+                    Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
                 continue;
             }
             // Don't test connections that are part of the input files
             if (test == null) {
-                Console.WriteLine($"\nSkipping test for {connectionName}, Reason: Part of input");
+                if (printProgress)
+                    Console.WriteLine($"\nSkipping test for {connectionName}, Reason: Part of input");
                 continue;
             }
 
-            Console.WriteLine($"\n-- Testing new connection: {connectionName} --");
+            if (printProgress)
+                Console.WriteLine($"\n-- Testing new connection: {connectionName} --");
             places = test.places;
             start = test.start;
             Solution testSolution = test.testSolution;
             if (testSolution.path.Length == 0) {
-                Console.WriteLine($"Connection not useful, because no route was found containing the connection.");
+                if (printProgress)
+                    Console.WriteLine($"Connection not useful, because no route was found containing the connection.");
                 continue;
             }
             int frameDifference = bestSolution.time - testSolution.time;
             if (frameDifference < frameDifferenceThreshold) {
-                Console.WriteLine($"Connection not useful, because it would need to be {frameDifference}f (or faster) to match (or beat) current best solution.");
+                if (printProgress)
+                    Console.WriteLine($"Connection not useful, because it would need to be {frameDifference}f (or faster) to match (or beat) current best solution.");
             } else {
                 usefulConnections.Add(new ConnectionResult(connectionName, ParseSolution(testSolution), frameDifference));
-                Console.WriteLine($"Best route using tested connection (assuming 0f for {connectionName}):");
-                PrintSolution(testSolution);
-                Console.WriteLine($"Connection {connectionName} needs to be {frameDifference}f (or faster) to match (or beat) current best solution.");
+                if (printProgress) {
+                    Console.WriteLine($"Best route using tested connection (assuming 0f for {connectionName}):");
+                    PrintSolution(testSolution);
+                    Console.WriteLine($"Connection {connectionName} needs to be {frameDifference}f (or faster) to match (or beat) current best solution.");
+                }
             }
         }
         Task.WaitAll(workers);
