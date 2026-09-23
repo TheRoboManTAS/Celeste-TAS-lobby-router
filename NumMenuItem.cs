@@ -65,7 +65,7 @@ public class NumMenuItem
     public NumMenuItem(ToolStripMenuItem inner, decimal min, decimal max, int places, Func<(decimal, decimal)>? getMinMax = null)
     {
         this.inner = inner;
-        varName = inner.Text;
+        varName = inner.Text ?? "";
         this.min = decimal.Round(min, places);
         this.max = decimal.Round(max, places);
         decPlaces = places;
