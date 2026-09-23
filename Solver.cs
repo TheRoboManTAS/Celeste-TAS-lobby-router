@@ -7,8 +7,7 @@ public sealed class Solver
     public const int NoSolutionTime = 99999999;
     const int Inf = int.MaxValue / 4;
 
-    readonly int nodeCount, start, finish, restartPenalty, maxRestarts;
-    readonly bool requiredRestarts, infRestarts;
+    readonly int nodeCount, start, finish, restartPenalty;
     readonly int[][] targets;
     readonly int[][] times;
     readonly ulong[] targeterMask;
@@ -16,7 +15,6 @@ public sealed class Solver
     readonly ulong allVisited;
 
     ulong visited;
-    int restartCount;
     int index;
     readonly int[] trail;
     int unvisitedLowerBound;
@@ -50,8 +48,7 @@ public sealed class Solver
         this.shareForbidden = shareForbidden;
     }
 
-    public Solver(PlaceInfo[] nodes, int start, int finish, int restartPenalty, int maxRestarts,
-        bool requiredRestarts, int tableSizeLog2 = 20)
+    public Solver(PlaceInfo[] nodes, int start, int finish, int restartPenalty, int tableSizeLog2 = 20)
     {
         nodeCount = nodes.Length;
         if (nodeCount > 64)
@@ -60,9 +57,6 @@ public sealed class Solver
         this.start = start;
         this.finish = finish;
         this.restartPenalty = restartPenalty;
-        this.maxRestarts = maxRestarts;
-        this.requiredRestarts = requiredRestarts;
-        infRestarts = maxRestarts < 0;
 
         targets = nodes.Select(p => p.targets).ToArray();
         times = nodes.Select(p => p.times).ToArray();
@@ -135,7 +129,6 @@ public sealed class Solver
 
         visited = 0;
         canonicalVisited = 0;
-        restartCount = 0;
         index = 0;
         unvisitedLowerBound = 0;
         for (int i = 0; i < nodeCount; i++)
@@ -200,12 +193,12 @@ public sealed class Solver
             return bound;
         }
 
-        int stateKey = pos + 1 + (infRestarts ? 0 : restartCount << 8);
+        int stateKey = pos + 1;
         int known = table.Get(visited, stateKey);
         bool share = shared != null && (visited & shareMask) == shareMask && pos != shareForbidden;
         int sharedKey = 0;
         if (share) {
-            sharedKey = canonicalId[pos] + 1 + (infRestarts ? 0 : restartCount << 8);
+            sharedKey = canonicalId[pos] + 1;
             int sharedKnown = shared!.Get(canonicalVisited, sharedKey);
             if (sharedKnown > known)
                 known = sharedKnown;
@@ -263,10 +256,8 @@ public sealed class Solver
         }
         else {
             result = Inf;
-            bool mustRestart = true;
             for (int i = 0; i < posTargets.Length; i++) {
                 if ((visited & (1UL << posTargets[i])) == 0) {
-                    mustRestart = false;
                     if (haveChildBounds && time + childBound[i] >= cutoff) {
                                 result = Math.Min(result, childBound[i]);
                         continue;
@@ -275,11 +266,9 @@ public sealed class Solver
                 }
             }
 
-            if (pos != start && (infRestarts || restartCount < maxRestarts) && (mustRestart || !requiredRestarts)) {
+            if (pos != start) {
                 index++;
-                restartCount++;
                 result = Math.Min(result, restartPenalty + Search(start, time + restartPenalty));
-                restartCount--;
                 index--;
             }
         }
@@ -341,23 +330,12 @@ public sealed class Solver
     readonly int[][] childBounds;
     int posArcCount, lastRoundBound;
     bool reducedValid;
-    int rootLambda, restartLambda;
+    int rootLambda;
 
     // this calculates the cheapest tree from the current position to all unvisited places, which is a better estimate than sum of cheapest entries
     int LowerBound(int pos, int enough, int rounds = BoundRounds, bool shrinkStep = false)
     {
         ulong unvisited = allVisited & ~visited;
-        bool restartsLeft = infRestarts || restartCount < maxRestarts;
-
-        if (!infRestarts) {
-            ulong usableNotStart = (~visited | (1UL << pos)) & ~(1UL << start);
-            int startOnly = 0;
-            for (ulong m = unvisited; m != 0; m &= m - 1)
-                if ((targeterMask[BitOperations.TrailingZeroCount(m)] & usableNotStart) == 0)
-                    startOnly++;
-            if ((pos == start ? startOnly - 1 : startOnly) > maxRestarts - restartCount)
-                return Inf;
-        }
 
         int n = 1;
         localId[pos] = 0;
@@ -373,17 +351,15 @@ public sealed class Solver
         reducedValid = false;
         for (ulong m = unvisited; m != 0; m &= m - 1)
             arcs = AddArcs(BitOperations.TrailingZeroCount(m), unvisited, arcs);
-        if (restartsLeft) {
-            var startTargets = targets[start];
-            var startTimes = times[start];
-            for (int i = 0; i < startTargets.Length; i++) {
-                if (((unvisited >> startTargets[i]) & 1) != 0) {
-                    arcTail[arcs] = 0;
-                    arcHead[arcs] = localId[startTargets[i]];
-                    arcCost[arcs] = restartPenalty + startTimes[i];
-                    arcSlot[arcs] = n;
-                    arcs++;
-                }
+        var startTargets = targets[start];
+        var startTimes = times[start];
+        for (int i = 0; i < startTargets.Length; i++) {
+            if (((unvisited >> startTargets[i]) & 1) != 0) {
+                arcTail[arcs] = 0;
+                arcHead[arcs] = localId[startTargets[i]];
+                arcCost[arcs] = restartPenalty + startTimes[i];
+                arcSlot[arcs] = n;
+                arcs++;
             }
         }
 
@@ -405,8 +381,8 @@ public sealed class Solver
         int slots = n + 1;
         capacity[0] = 1;
         localLambda[0] = rootLambda;
-        capacity[n] = infRestarts ? -1 : maxRestarts - restartCount;
-        localLambda[n] = infRestarts ? 0 : restartLambda;
+        capacity[n] = -1;
+        localLambda[n] = 0;
         for (int v = 1; v < n; v++) {
             capacity[v] = localPlace[v] == finish ? 0 : 1;
             localLambda[v] = lambda[localPlace[v]];
@@ -461,7 +437,6 @@ public sealed class Solver
         }
 
         rootLambda = localLambda[0];
-        restartLambda = localLambda[n];
         for (int v = 1; v < n; v++)
             lambda[localPlace[v]] = localLambda[v];
         return best;

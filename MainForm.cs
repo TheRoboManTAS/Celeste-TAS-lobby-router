@@ -24,7 +24,6 @@ public partial class MainForm : Form
     public MainForm()
     {
         InitializeComponent();
-        maxRestarts = new NumMenuItem(maxRestartCountToolStripMenuItem, -1, 1000, 0);
         topNSolutions = new NumMenuItem(topNSolutionsToolStripMenuItem, 1, 100000, 0);
         threadCountToolStripMenuItem.Text = $"Thread Count (max {Environment.ProcessorCount})";
         threadCount = new NumMenuItem(threadCountToolStripMenuItem, 1, Environment.ProcessorCount, 0);
@@ -257,7 +256,6 @@ public partial class MainForm : Form
         cbx_printDetailedProgress.Enabled = cbx_newConnectionsMode.Checked;
     }
 
-    NumMenuItem maxRestarts;
     NumMenuItem topNSolutions;
     NumMenuItem threadCount;
 
@@ -352,7 +350,6 @@ public partial class MainForm : Form
         UpdateStartAndEnd(true);
     }
 
-    private void onlyRequiredRestartsToolStripMenuItem_Click(object sender, EventArgs e) => onlyRequiredRestartsToolStripMenuItem.Checked ^= true;
     private void multithreadingToolStripMenuItem_Click(object sender, EventArgs e) => multithreadingToolStripMenuItem.Checked ^= true;
     private void multithreadingToolStripMenuItem_CheckedChanged(object sender, EventArgs e) => threadCountToolStripMenuItem.Enabled = multithreadingToolStripMenuItem.Checked;
     //private void distinctResultEndTimesToolStripMenuItem_Click(object sender, EventArgs e) => distinctResultEndTimesToolStripMenuItem.Checked ^= true;

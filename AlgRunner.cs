@@ -194,8 +194,6 @@ public class AlgRunner
 
     public void PrintSettings() {
         Console.WriteLine("\n-- Settings --");
-        Console.WriteLine("Only Dead End Restarts: " + settings.RequiredRestarts);
-        Console.WriteLine("Max Restart Count: " + settings.maxRestarts);
         Console.WriteLine("Number of Solutions: " + settings.topNSolutions);
         Console.WriteLine("Find New Connections Mode: " + settings.newConnectionsMode);
     }
@@ -239,7 +237,7 @@ public class AlgRunner
             Output.PrintError($"The router currently only supports at most 64 nodes, because of 64-bit trickery™, got {places.Length}.\n");
             return null;
         }
-        return new Solver(nodes, start, finish, restartPenalty, settings.maxRestarts, settings.RequiredRestarts);
+        return new Solver(nodes, start, finish, restartPenalty);
     }
 
     public Solution TestConnection() =>

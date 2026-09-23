@@ -24,10 +24,6 @@ public class Settings
 
     [Setting(Input = "num_restartPenalty.Value")]
     public int restartPenalty = 190;
-    [Setting(Input = "onlyRequiredRestartsToolStripMenuItem.Checked")]
-    public bool RequiredRestarts = false;
-    [Setting(Input = "maxRestarts.Value")]
-    public int maxRestarts = -1;
     [Setting(Input = "topNSolutions.Value")]
     public int topNSolutions = 100;
 

@@ -41,8 +41,6 @@ namespace RoboRouter
             this.logResultsToTextFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             //this.disableResultSortingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.onlyRequiredRestartsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.maxRestartCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.topNSolutionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.multithreadingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.threadCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -156,8 +154,6 @@ namespace RoboRouter
             // restartsToolStripMenuItem
             // 
             this.restartsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.onlyRequiredRestartsToolStripMenuItem,
-            this.maxRestartCountToolStripMenuItem,
             this.topNSolutionsToolStripMenuItem,
             this.multithreadingToolStripMenuItem,
             this.threadCountToolStripMenuItem
@@ -165,19 +161,6 @@ namespace RoboRouter
             this.restartsToolStripMenuItem.Name = "restartsToolStripMenuItem";
             this.restartsToolStripMenuItem.Size = new System.Drawing.Size(60, 20);
             this.restartsToolStripMenuItem.Text = "Settings";
-            // 
-            // onlyRequiredRestartsToolStripMenuItem
-            // 
-            this.onlyRequiredRestartsToolStripMenuItem.Name = "onlyRequiredRestartsToolStripMenuItem";
-            this.onlyRequiredRestartsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.onlyRequiredRestartsToolStripMenuItem.Text = "Only Dead End Restarts";
-            this.onlyRequiredRestartsToolStripMenuItem.Click += new System.EventHandler(this.onlyRequiredRestartsToolStripMenuItem_Click);
-            // 
-            // maxRestartCountToolStripMenuItem
-            // 
-            this.maxRestartCountToolStripMenuItem.Name = "maxRestartCountToolStripMenuItem";
-            this.maxRestartCountToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.maxRestartCountToolStripMenuItem.Text = "Max Restart Count";
             // 
             // topNSolutionsToolStripMenuItem
             // 
@@ -409,8 +392,6 @@ namespace RoboRouter
         private System.Windows.Forms.Button btn_refresh;
         //private System.Windows.Forms.ToolStripMenuItem distinctResultEndTimesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logResultsToTextFilesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem onlyRequiredRestartsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem maxRestartCountToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem topNSolutionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem multithreadingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem threadCountToolStripMenuItem;
