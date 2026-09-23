@@ -11,7 +11,10 @@ public class AlgRunner
 
     public int restartPenalty;
 
-    public bool stillRunning = true;
+    public volatile bool stillRunning = true;
+
+    public int threads;
+    Solution testSolution;
 
     string[] places;
     int start;
@@ -28,19 +31,9 @@ public class AlgRunner
     }
 
     public void SetAllFileConnectionsToTime(string _start, string _end, int _time) {
-        List<FileInfo> matchedFiles;
-        if (_start == "0") {
-            matchedFiles = files.Where(f => f.end == _end).ToList();
-        } else {
-            matchedFiles = files.Where(f => f.start == _start || f.end == _end).ToList();
-        }
-        
-        for (int i = 0; i < matchedFiles.Count; i++)
-        {
-            int matchedIndex = Array.IndexOf(files, matchedFiles[i]);
-            FileInfo updatedFile = files[matchedIndex];
-            updatedFile.time = _time;
-            files[matchedIndex] = updatedFile;
+        for (int i = 0; i < files.Length; i++) {
+            if (files[i].end == _end || (_start != "0" && files[i].start == _start))
+                files[i].time = _time;
         }
     }
 
@@ -81,185 +74,18 @@ public class AlgRunner
 
     public void SolveLobby()
     {
-        // put the name of every distinct place to an array
-        places = files.Select(f => f.start)
-            .Concat(files.Select(f => f.end))
-            .Distinct().ToArray();
-        // get amount of places minus the start, for checking pathfind trail length
-        int placeCount = places.Length - 1;
-
-        // parse `files` into a more efficient pathfinding data structure. check PlaceInfo struct.
-        PlaceInfo[] nodes = places.Select<string, PlaceInfo>(p => new() {
-            name = p,
-            targets = files.Where(i => i.start == p).Select(i =>
-                    Array.IndexOf(places, i.end)).ToArray(),
-            times = files.Where(i => i.start == p).Select(i =>
-                    files.First(f => f.start == p && f.end == i.end).time).ToArray()
-        }).ToArray();
-        for (int i = 0; i < nodes.Length; i++)
-            nodes[i].targeters = Enumerable.Range(0, nodes.Length)
-                .Where(j => nodes[j].targets.Contains(i)).ToArray();
-
-        start = settings.UseTableInput ? 0 : Array.IndexOf(places, startFile);
-        int finish = settings.UseTableInput ? places.Length - 1 : Array.IndexOf(places, finishFile);
-
-        var solutions = new List<Solution>();
-        for (int i = 0; i < settings.topNSolutions; i++) {
-            solutions.Add(new Solution(new int[] {}, 99999999));
-        }
-
-        long iterations = 0;
-        int consideredSolutions = 0;
-        int cutBranches = 0;
-        int restartCount = 0;
-        bool infRestarts = settings.maxRestarts < 0;
-
-        var trail = new int[places.Length + nodes[start].targets.Length];
-        var canGo = Enumerable.Repeat(true, places.Length).ToArray();
-        int index = 0;
-        int visitCount = 0;
-
-        Func<int, bool, bool> canRestart;
-        if (infRestarts) {
-            canRestart = settings.RequiredRestarts
-                ? (pos, must) => (pos != start) & must
-                : (pos, must) => pos != start;
-        }
-        else {
-            canRestart = settings.RequiredRestarts
-                ? (pos, must) => (pos != start) & (restartCount < settings.maxRestarts) & must
-                : (pos, must) => (pos != start) & (restartCount < settings.maxRestarts);
-        }
-
-        var lowestTimes = new List<int>();
-        for (int n = 0; n < nodes.Count(); n++) {
-            lowestTimes.Add(99999999);
-        }
-
-        // Determine lowest incoming time for each node
-        lowestTimes[start] = 0;
-        for (int n = 0; n < nodes.Count(); n++) {
-            for (int t = 0; t < nodes[n].targets.Count(); t++) {
-                if (lowestTimes[nodes[n].targets[t]] > nodes[n].times[t]) {
-                    lowestTimes[nodes[n].targets[t]] = nodes[n].times[t];
-                }
-            }
-        }
-
-        int globalLowerBound = 0;
-
-        for (int i = 0; i < lowestTimes.Count; i++) {
-            globalLowerBound += lowestTimes[i];
-        }
-
-        int localLowerBound = globalLowerBound;
+        var totalTimer = System.Diagnostics.Stopwatch.StartNew();
+        var solver = CreateSolver(out var nodes);
+        if (solver == null)
+            return;
 
         Console.WriteLine("Current fastest route:");
         var timer = System.Diagnostics.Stopwatch.StartNew();
-        
-        PathFind(start);
-        void PathFind(int pos)
-        {
-            trail[index] = pos;
 
-            iterations++;
-
-            // if finished, process the solution
-            if (pos == finish) {
-                if (visitCount == placeCount) {
-                    var truncated = trail.Take(index + 1).ToArray();
-                    int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
-                    consideredSolutions++;
-                    if (time < solutions[settings.topNSolutions - 1].time) {
-                        for (int i = 0; i < settings.topNSolutions; i++) {
-                            if (time < solutions[i].time) { 
-                                if (i == 0) {
-                                    Console.WriteLine(ParseSolution(new Solution(truncated, time)));
-                                }
-                                solutions.Insert(i, new Solution(truncated, time));
-                                solutions.RemoveAt(settings.topNSolutions);
-                                break;
-                            }
-                        }
-                    }
-                }
-                return;
-            }
-
-            if (localLowerBound >= solutions[settings.topNSolutions - 1].time) {
-                cutBranches++;
-                return;
-            }
-
-            int addedTime = index != 0 ? trail[index] == start ? restartPenalty : nodes[trail[index - 1]].FramesTo(trail[index]) : 0;
-            int updateLowerBound = addedTime - lowestTimes[pos];
-
-            var targets = nodes[pos].targets;
-
-            bool hasDeadEnd = false;
-            int deadEnd = 0;
-            for (int i = 0; i < targets.Length; i++) {
-                int target = targets[i];
-                if (canGo[target]) {
-                    var node = nodes[target];
-                    for (int j = 0; j < node.targeters.Length; j++)
-                        if (canGo[node.targeters[j]])
-                            goto EndChecking;
-                    if (hasDeadEnd)
-                        return;
-                    hasDeadEnd = true;
-                    deadEnd = target;
-                }
-                EndChecking: { }
-            }
-
-            if (hasDeadEnd) {
-                visitCount++;
-                index++;
-                canGo[deadEnd] = false;
-                localLowerBound += updateLowerBound;
-
-                PathFind(deadEnd);
-
-                visitCount--;
-                index--;
-                canGo[deadEnd] = true;
-                localLowerBound -= updateLowerBound;
-                return;
-            }
-
-            // branch out to all current position connections that havent been visited
-            bool mustRestart = true;
-            for (int i = 0; i < targets.Length; i++) {
-                int target = targets[i];
-                if (canGo[target]) {
-                    visitCount++;
-                    index++;
-                    canGo[target] = false;
-                    localLowerBound += updateLowerBound;
-
-                    PathFind(targets[i]);
-
-                    visitCount--;
-                    index--;
-                    canGo[target] = true;
-                    localLowerBound -= updateLowerBound;
-
-                    mustRestart = false;
-                }
-            }
-
-            // restarts
-            if (canRestart(pos, mustRestart)) {
-                index++;
-                restartCount++;
-                localLowerBound += updateLowerBound;
-                PathFind(start);
-                localLowerBound -= updateLowerBound;
-                restartCount--;
-                index--;
-            }
-        }
+        var solutions = solver.Solve(settings.topNSolutions, sol => Console.WriteLine(ParseSolution(sol))).ToList();
+        long iterations = solver.Iterations;
+        long cutBranches = solver.CutBranches;
+        int consideredSolutions = solver.ConsideredSolutions;
 
         solutions.Reverse();
         timer.Stop();
@@ -303,6 +129,7 @@ public class AlgRunner
         Console.WriteLine("Pathfind function calls: "+ iterations);
         Console.WriteLine("Branches cut: " + cutBranches);
         Console.WriteLine("Full solutions calculated: " + consideredSolutions);
+        Console.WriteLine("Total time: " + totalTimer.Elapsed);
 
         // give debug advice if no solutions
         if (solutions.Count == 0) {
@@ -373,180 +200,65 @@ public class AlgRunner
         Console.WriteLine("Find New Connections Mode: " + settings.newConnectionsMode);
     }
 
-    public Solution TestConnection()
+    // parse `files` into a more efficient pathfinding data structure. check PlaceInfo struct.
+    Solver? CreateSolver(out PlaceInfo[] nodes)
     {
         // put the name of every distinct place to an array
-        places = files.Select(f => f.start)
-            .Concat(files.Select(f => f.end))
-            .Distinct().ToArray();
-        // get amount of places minus the start, for checking pathfind trail length
-        int placeCount = places.Length - 1;
+        var placeIndex = new Dictionary<string, int>();
+        foreach (var f in files)
+            placeIndex.TryAdd(f.start, placeIndex.Count);
+        foreach (var f in files)
+            placeIndex.TryAdd(f.end, placeIndex.Count);
+        places = placeIndex.Keys.ToArray();
 
-        // parse `files` into a more efficient pathfinding data structure. check PlaceInfo struct.
-        PlaceInfo[] nodes = places.Select<string, PlaceInfo>(p => new() {
-            name = p,
-            targets = files.Where(i => i.start == p).Select(i =>
-                    Array.IndexOf(places, i.end)).ToArray(),
-            times = files.Where(i => i.start == p).Select(i =>
-                    files.First(f => f.start == p && f.end == i.end).time).ToArray()
-        }).ToArray();
-        for (int i = 0; i < nodes.Length; i++)
-            nodes[i].targeters = Enumerable.Range(0, nodes.Length)
-                .Where(j => nodes[j].targets.Contains(i)).ToArray();
+        var firstTime = new Dictionary<(string, string), int>();
+        foreach (var f in files)
+            firstTime.TryAdd((f.start, f.end), f.time);
+        var targets = places.Select(_ => new List<int>()).ToArray();
+        var times = places.Select(_ => new List<int>()).ToArray();
+        foreach (var f in files) {
+            targets[placeIndex[f.start]].Add(placeIndex[f.end]);
+            times[placeIndex[f.start]].Add(firstTime[(f.start, f.end)]);
+        }
+
+        var placeInfos = new PlaceInfo[places.Length];
+        for (int i = 0; i < places.Length; i++)
+            placeInfos[i] = new PlaceInfo { name = places[i], targets = targets[i].ToArray(), times = times[i].ToArray() };
+        var targeters = places.Select(_ => new List<int>()).ToArray();
+        for (int j = 0; j < places.Length; j++)
+            foreach (int t in placeInfos[j].targets.Distinct())
+                targeters[t].Add(j);
+        for (int i = 0; i < places.Length; i++)
+            placeInfos[i].targeters = targeters[i].ToArray();
+        nodes = placeInfos;
 
         start = settings.UseTableInput ? 0 : Array.IndexOf(places, startFile);
         int finish = settings.UseTableInput ? places.Length - 1 : Array.IndexOf(places, finishFile);
 
-        var solutions = new List<Solution>();
-        solutions.Add(new Solution(new int[] {}, 99999999));
-
-        long iterations = 0;
-        int consideredSolutions = 0;
-        int cutBranches = 0;
-        int restartCount = 0;
-        bool infRestarts = settings.maxRestarts < 0;
-
-        var trail = new int[places.Length + nodes[start].targets.Length];
-        var canGo = Enumerable.Repeat(true, places.Length).ToArray();
-        int index = 0;
-        int visitCount = 0;
-
-        Func<int, bool, bool> canRestart;
-        if (infRestarts) {
-            canRestart = settings.RequiredRestarts
-                ? (pos, must) => (pos != start) & must
-                : (pos, must) => pos != start;
+        if (places.Length > 64) {
+            Output.PrintError($"The router currently only supports at most 64 nodes, because of 64-bit trickery™, got {places.Length}.\n");
+            return null;
         }
-        else {
-            canRestart = settings.RequiredRestarts
-                ? (pos, must) => (pos != start) & (restartCount < settings.maxRestarts) & must
-                : (pos, must) => (pos != start) & (restartCount < settings.maxRestarts);
-        }
+        return new Solver(nodes, start, finish, restartPenalty, settings.maxRestarts, settings.RequiredRestarts);
+    }
 
-        var lowestTimes = new List<int>();
-        for (int n = 0; n < nodes.Count(); n++) {
-            lowestTimes.Add(99999999);
-        }
+    public Solution TestConnection() =>
+        CreateSolver(out _)?.Solve(1)[0] ?? new Solution(new int[] {}, Solver.NoSolutionTime);
 
-        // Determine lowest incoming time for each node
-        lowestTimes[start] = 0;
-        for (int n = 0; n < nodes.Count(); n++) {
-            for (int t = 0; t < nodes[n].targets.Count(); t++) {
-                if (lowestTimes[nodes[n].targets[t]] > nodes[n].times[t]) {
-                    lowestTimes[nodes[n].targets[t]] = nodes[n].times[t];
-                }
+    // after both nodes of the test connection have been visited, results from previous runs are shared
+    Solution TestConnection(string _start, string _end, SharedBoundTable sharedBounds, Dictionary<string, int> lobbyIds)
+    {
+        var solver = CreateSolver(out _);
+        if (solver == null)
+            return new Solution(new int[] {}, Solver.NoSolutionTime);
+        if (places.All(lobbyIds.ContainsKey)) {
+            int s = Array.IndexOf(places, _start), e = Array.IndexOf(places, _end);
+            if (s >= 0 && e >= 0) {
+                solver.ShareBounds(sharedBounds, places.Select(p => lobbyIds[p]).ToArray(),
+                    (1UL << e) | (s == start ? 0 : 1UL << s), s == start ? -1 : s);
             }
         }
-
-        int globalLowerBound = 0;
-
-        for (int i = 0; i < lowestTimes.Count; i++) {
-            globalLowerBound += lowestTimes[i];
-        }
-
-        int localLowerBound = globalLowerBound;
-
-        var timer = System.Diagnostics.Stopwatch.StartNew();
-        
-        PathFind(start);
-        void PathFind(int pos)
-        {
-            trail[index] = pos;
-
-            iterations++;
-
-            // if finished, process the solution
-            if (pos == finish) {
-                if (visitCount == placeCount) {
-                    var truncated = trail.Take(index + 1).ToArray();
-                    int time = truncated.Skip(1).Select((e, i) => e == start ? restartPenalty : nodes[trail[i]].FramesTo(e)).Sum();
-                    consideredSolutions++;
-                    if (time < solutions[0].time) {
-                        solutions.Insert(0, new Solution(truncated, time));
-                        solutions.RemoveAt(1);
-                    }
-                }
-                return;
-            }
-
-            if (localLowerBound >= solutions[0].time) {
-                cutBranches++;
-                return;
-            }
-
-            int addedTime = index != 0 ? trail[index] == start ? restartPenalty : nodes[trail[index - 1]].FramesTo(trail[index]) : 0;
-            int updateLowerBound = addedTime - lowestTimes[pos];
-
-            var targets = nodes[pos].targets;
-
-            bool hasDeadEnd = false;
-            int deadEnd = 0;
-            for (int i = 0; i < targets.Length; i++) {
-                int target = targets[i];
-                if (canGo[target]) {
-                    var node = nodes[target];
-                    for (int j = 0; j < node.targeters.Length; j++)
-                        if (canGo[node.targeters[j]])
-                            goto EndChecking;
-                    if (hasDeadEnd)
-                        return;
-                    hasDeadEnd = true;
-                    deadEnd = target;
-                }
-                EndChecking: { }
-            }
-
-            if (hasDeadEnd) {
-                visitCount++;
-                index++;
-                canGo[deadEnd] = false;
-                localLowerBound += updateLowerBound;
-
-                PathFind(deadEnd);
-
-                visitCount--;
-                index--;
-                canGo[deadEnd] = true;
-                localLowerBound -= updateLowerBound;
-                return;
-            }
-
-            // branch out to all current position connections that havent been visited
-            bool mustRestart = true;
-            for (int i = 0; i < targets.Length; i++) {
-                int target = targets[i];
-                if (canGo[target]) {
-                    visitCount++;
-                    index++;
-                    canGo[target] = false;
-                    localLowerBound += updateLowerBound;
-
-                    PathFind(targets[i]);
-
-                    visitCount--;
-                    index--;
-                    canGo[target] = true;
-                    localLowerBound -= updateLowerBound;
-
-                    mustRestart = false;
-                }
-            }
-
-            // restarts
-            if (canRestart(pos, mustRestart)) {
-                index++;
-                restartCount++;
-                localLowerBound += updateLowerBound;
-                PathFind(start);
-                localLowerBound -= updateLowerBound;
-                restartCount--;
-                index--;
-            }
-        }
-
-        timer.Stop();
-
-        return solutions[0];
+        return solver.Solve(1)[0];
     }
 
     Regex parseConnectionInput = new(@"^(\s*\d+\s*-\s*\d+\s*)(\s*,\s*\d+\s*-\s*\d+\s*)*$");
@@ -588,11 +300,19 @@ public class AlgRunner
     }
 
     public void FindNewConnections() {
+        var totalTimer = System.Diagnostics.Stopwatch.StartNew();
         FileInfo[] originalFileArray = DeepCopyFileInfoArray(files);
         Output.SetColor(Color.White);
         Console.WriteLine("-- Find New Connections Mode --");
         Console.WriteLine("Solving lobby to get reference solution...");
-        Solution bestSolution = TestConnection();
+        var sharedBounds = new SharedBoundTable();
+        Solution bestSolution = new Solution(new int[] {}, Solver.NoSolutionTime);
+        var referenceSolver = CreateSolver(out _);
+        var lobbyIds = places.Select((p, i) => (p, i)).ToDictionary(x => x.p, x => x.i);
+        if (referenceSolver != null) {
+            referenceSolver.ShareBounds(sharedBounds, Enumerable.Range(0, places.Length).ToArray(), 0, -1);
+            bestSolution = referenceSolver.Solve(1)[0];
+        }
         Console.WriteLine("\nReference Solution: ");
         PrintSolution(bestSolution);
         Console.WriteLine();
@@ -620,25 +340,71 @@ public class AlgRunner
 
         var usefulConnections = new List<ConnectionResult>();
         int frameDifferenceThreshold = 0;
+        var tests = new AlgRunner?[connections.Count];
+        var solved = new bool[connections.Count];
+        Exception? workerError = null;
+        int nextTest = -1;
+        void TestWorker()
+        {
+            try {
+                int i;
+                while (stillRunning && workerError == null && (i = Interlocked.Increment(ref nextTest)) < connections.Count) {
+                    var connection = connections[i];
+                    AlgRunner? test = null;
+                    if (connection.end != connection.start &&
+                        !ConnectionExistsInFileInfos(connection.start.ToString(), connection.end.ToString(), originalFileArray)) {
+                        test = new AlgRunner(DeepCopyFileInfoArray(originalFileArray), settings, startFile, finishFile, restartPenalty, 0);
+                        test.EditFilesToTestNewConnection(connection.start.ToString(), connection.end.ToString());
+                        test.testSolution = test.TestConnection(connection.start.ToString(), connection.end.ToString(), sharedBounds, lobbyIds);
+                    }
+                    lock (solved) {
+                        tests[i] = test;
+                        solved[i] = true;
+                        Monitor.PulseAll(solved);
+                    }
+                }
+            }
+            catch (Exception e) {
+                lock (solved) {
+                    workerError = e;
+                    Monitor.PulseAll(solved);
+                }
+            }
+        }
+        var workers = Enumerable.Range(0, Math.Max(1, threads))
+            .Select(_ => Task.Factory.StartNew(TestWorker, TaskCreationOptions.LongRunning)).ToArray();
 
-        foreach (Connection connection in connections) {
+        for (int i = 0; i < connections.Count; i++) {
+            var connection = connections[i];
             string connectionName = connection.start + "-" + connection.end;
-            
+
+            AlgRunner? test;
+            lock (solved) {
+                while (!solved[i] && workerError == null && stillRunning)
+                    Monitor.Wait(solved, 200);
+                if (workerError != null)
+                    throw new AggregateException(workerError);
+                if (!solved[i])
+                    return;
+                test = tests[i];
+                tests[i] = null;
+            }
+
             // Don't test invalid connections
             if (connection.end == connection.start || connection.start == 0 && connection.end == places.Length) {
                 Console.WriteLine($"\nSkipping test for {connectionName}, Reason: invalid");
                 continue;
             }
             // Don't test connections that are part of the input files
-            if (ConnectionExistsInFileInfos(connection.start.ToString(), connection.end.ToString(), originalFileArray)) {
+            if (test == null) {
                 Console.WriteLine($"\nSkipping test for {connectionName}, Reason: Part of input");
                 continue;
             }
 
             Console.WriteLine($"\n-- Testing new connection: {connectionName} --");
-            files = DeepCopyFileInfoArray(originalFileArray);
-            EditFilesToTestNewConnection(connection.start.ToString(), connection.end.ToString());
-            Solution testSolution = TestConnection();
+            places = test.places;
+            start = test.start;
+            Solution testSolution = test.testSolution;
             if (testSolution.path.Length == 0) {
                 Console.WriteLine($"Connection not useful, because no route was found containing the connection.");
                 continue;
@@ -653,6 +419,7 @@ public class AlgRunner
                 Console.WriteLine($"Connection {connectionName} needs to be {frameDifference}f (or faster) to match (or beat) current best solution.");
             }
         }
+        Task.WaitAll(workers);
         
         Console.WriteLine("\n-- Overview of all potentially useful new connections --\n");
 
@@ -671,6 +438,7 @@ public class AlgRunner
         }
 
         PrintSettings();
+        Console.WriteLine("\nTotal time: " + totalTimer.Elapsed);
     }
 
     string ParseSolution(Solution sol) =>
@@ -711,5 +479,15 @@ public class AlgRunner
         startFile = src.startFile;
         finishFile = src.finishFile;
         restartPenalty = settings.UseTableInput ? src.tableRestartPenalty : settings.restartPenalty;
+        threads = settings.Multithreading ? Math.Max(1, settings.ThreadCount) : 1;
+    }
+
+    AlgRunner(FileInfo[] files, Settings settings, string startFile, string finishFile, int restartPenalty, int _)
+    {
+        this.files = files;
+        this.settings = settings;
+        this.startFile = startFile;
+        this.finishFile = finishFile;
+        this.restartPenalty = restartPenalty;
     }
 }
